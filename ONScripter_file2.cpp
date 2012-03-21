@@ -70,6 +70,7 @@ int ONScripter::loadSaveFile2( int file_version )
     sentence_font.wait_time = readInt();
 
     AnimationInfo *ai = &sentence_font_info;
+    ai->remove();
     ai->orig_pos.x = readInt();
     ai->orig_pos.y = readInt();
     ai->orig_pos.w = readInt() + 1 - ai->orig_pos.x;

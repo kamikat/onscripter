@@ -18,7 +18,7 @@
 最近あまり時間がとれないため更新が非常に遅くなることがありますがご了承下さい。<br>
 Since: Feb. 6, 2002<br>
 <!--Last updated: Sep. 12, 2010 (サーバ移行)<br>-->
-Last updated: Mar. 17, 2012 (ソース更新)<br>
+Last updated: Mar. 20, 2012 (ソース更新)<br>
 <!--Last updated: May 25, 2010 (バイナリパッケージ追加・修正)<br>-->
 <!--Last updated: Jul. 12, 2009 (Experimental ソース更新)<br>-->
 </div> <!-- header -->
@@ -86,10 +86,10 @@ Last updated: Mar. 17, 2012 (ソース更新)<br>
 
 <table><tr>
 <td>最新版</td>
-<td><a href="onscripter-20120317.tar.gz">onscripter-20120317.tar.gz</a></td>
+<td><a href="onscripter-20120320.tar.gz">onscripter-20120320.tar.gz</a></td>
 </tr><tr>
 <td>旧版</td>
-<td><a href="onscripter-20120310.tar.gz">onscripter-20120310.tar.gz</a></td>
+<td><a href="onscripter-20120318.tar.gz">onscripter-20120318.tar.gz</a></td>
 </tr></table>
 <!--  <li> <a href="onscripter-exp-20090712.tar.gz">onscripter-exp-20090712.tar.gz</a>(実験版, バグ修正)-->
 
@@ -305,7 +305,7 @@ avi コマンドを使ってムービーを再生する場合には入れてください。Linux で動作確認を
 <tr><td>--window</td><td>ウィンドウモードで起動します。</td></tr>
 <tr><td>--force-button-shortcut</td><td>getenter と useescspc のコマンドを無視します。つまり、マウスのクリックを強制的に esc, space, return キーに割り付けます。</td></tr>
 <tr><td>--enable-wheeldown-advance</td><td>テキスト終端でのクリック待ちの際に、マウスのホイールダウン操作をクリック操作として扱います。textgosub でクリック待ちをカスタマイズしているときには効果はありません。</td></tr>
-<tr><td>--disable-rescale</td><td>-DPDA を付けてコンパイルした ONScripter で、画像の解像度を PDA 用に落としたアーカイブを使用する場合は、このオプションを設定してください。ONScripter 内で解像度を 320x240 用に変換することを抑制します。</td></tr>
+<tr><td>--disable-rescale</td><td>PDA_WIDTH や PDA_AUTOSIZE を定義してコンパイルした ONScripter において、アーカイブから画像を読み込む際に、画像の大きさを端末のスクリーンの大きさに変換しないようにします。あらかじめ<a href="#archive-compression">アーカイブ圧縮</a>によって画像の大きさを端末のスクリーンの大きさに変換しておいたアーカイブを一緒に使用すると、変換処理が省略されるため動作が高速になります。ただし、この場合でもアーカイブ外の画像ファイルは大きさが変換されます。</td></tr>
 <tr><td>--edit</td><td>z キーを押したときに、音量及び変数の編集モードに入れるようになります。</td></tr>
 </table>
 
