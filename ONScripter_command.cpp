@@ -615,6 +615,7 @@ void ONScripter::setwindowCore()
         sentence_font.is_transparent = true;
         readColor( &sentence_font.window_color, buf );
 
+        ai->remove();
         ai->orig_pos.x = script_h.readInt();
         ai->orig_pos.y = script_h.readInt();
         ai->orig_pos.w = script_h.readInt() - ai->orig_pos.x + 1;
@@ -658,6 +659,7 @@ int ONScripter::setwindow2Command()
     if ( buf[0] == '#' ){
         sentence_font.is_transparent = true;
         readColor( &sentence_font.window_color, buf );
+        sentence_font_info.remove();
     }
     else{
         sentence_font.is_transparent = false;

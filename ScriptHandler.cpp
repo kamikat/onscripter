@@ -496,6 +496,8 @@ ScriptHandler::LabelInfo ScriptHandler::getLabelByLine( int line )
 
 bool ScriptHandler::isName( const char *name )
 {
+    if (string_buffer[0] == '_')
+        return (strncmp( name, string_buffer+1, strlen(name) )==0)?true:false;
     return (strncmp( name, string_buffer, strlen(name) )==0)?true:false;
 }
 
