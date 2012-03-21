@@ -2,6 +2,7 @@
 #
 # Makefile.onscripter - General makefile rules for ONScripter
 #
+CHARSET = gbk
 
 GUI_OBJS = ONScripter$(OBJSUFFIX) \
 	ONScripter_animation$(OBJSUFFIX) \
@@ -19,7 +20,8 @@ GUI_OBJS = ONScripter$(OBJSUFFIX) \
 	AnimationInfo$(OBJSUFFIX) \
 	FontInfo$(OBJSUFFIX) \
 	DirtyRect$(OBJSUFFIX) \
-	resize_image$(OBJSUFFIX)
+	resize_image$(OBJSUFFIX)\
+	onslocale$(OBJSUFFIX) onssettings$(OBJSUFFIX)
 
 DECODER_OBJS = DirectReader$(OBJSUFFIX) \
 	SarReader$(OBJSUFFIX) \
@@ -85,6 +87,8 @@ simple_aviplay$(EXESUFFIX): simple_aviplay$(OBJSUFFIX) AVIWrapper$(OBJSUFFIX)
 
 onscripter$(EXESUFFIX): $(ONSCRIPTER_OBJS)
 	$(LD)$@ $(ONSCRIPTER_OBJS) $(LIBS)
+onslocale$(OBJSUFFIX): onslocale.h locale/$(CHARSET).cpp
+	$(CC) $(CFLAGS) onslocale.cpp
 
 clean:
 	-$(RM) $(TARGET)

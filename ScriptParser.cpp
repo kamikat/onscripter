@@ -26,9 +26,9 @@
 #define VERSION_STR1 "ONScripter"
 #define VERSION_STR2 "Copyright (C) 2001-2012 Studio O.G.A. All Rights Reserved."
 
-#define DEFAULT_SAVE_MENU_NAME "亙僙乕僽亜"
-#define DEFAULT_LOAD_MENU_NAME "亙儘乕僪亜"
-#define DEFAULT_SAVE_ITEM_NAME "偟偍傝"
+#define DEFAULT_SAVE_MENU_NAME "保存"
+#define DEFAULT_LOAD_MENU_NAME "读取"
+#define DEFAULT_SAVE_ITEM_NAME "进度"
 
 #define DEFAULT_TEXT_SPEED_LOW    40
 #define DEFAULT_TEXT_SPEED_MIDDLE 20

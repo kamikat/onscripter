@@ -33,14 +33,14 @@
 #define MESSAGE_YES "Yes"
 #define MESSAGE_NO "No"
 #else
-#define MESSAGE_SAVE_EXIST "%s%s丂%s寧%s擔%s帪%s暘"
-#define MESSAGE_SAVE_EMPTY "%s%s丂亅亅亅亅亅亅亅亅亅亅亅亅"
-#define MESSAGE_SAVE_CONFIRM "%s%s偵僙乕僽偟傑偡丅傛傠偟偄偱偡偐丠"
-#define MESSAGE_LOAD_CONFIRM "%s%s傪儘乕僪偟傑偡丅傛傠偟偄偱偡偐丠"
-#define MESSAGE_RESET_CONFIRM "儕僙僢僩偟傑偡丅傛傠偟偄偱偡偐丠"
-#define MESSAGE_END_CONFIRM "廔椆偟傑偡丅傛傠偟偄偱偡偐丠"
-#define MESSAGE_YES "偼偄"
-#define MESSAGE_NO "偄偄偊"
+#define MESSAGE_SAVE_EXIST "%s%s　%s月%s日%s时%s分"
+#define MESSAGE_SAVE_EMPTY "%s%s　－－－－－－－－－－－－"
+#define MESSAGE_SAVE_CONFIRM "%s保存到%s。确认？"
+#define MESSAGE_LOAD_CONFIRM "%s从%s读取。确认？"
+#define MESSAGE_RESET_CONFIRM "重置游戏。确认？"
+#define MESSAGE_END_CONFIRM "结束游戏。确认？"
+#define MESSAGE_YES "是"
+#define MESSAGE_NO "否"
 #endif
 
 void ONScripter::enterSystemCall()

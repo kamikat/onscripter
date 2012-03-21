@@ -22,6 +22,8 @@
  */
 
 #include "ONScripter.h"
+#include "onslocale.h"
+#include "onssettings.h"
 #ifdef USE_FONTCONFIG
 #include <fontconfig/fontconfig.h>
 #endif
@@ -175,7 +177,7 @@ void ONScripter::initSDL()
     printf("Display: %d x %d (%d bpp)\n", screen_width, screen_height, screen_bpp);
     dirty_rect.setDimension(screen_width, screen_height);
     
-    initSJIS2UTF16();
+    onsLocaleInit();
     
     wm_title_string = new char[ strlen(DEFAULT_WM_TITLE) + 1 ];
     memcpy( wm_title_string, DEFAULT_WM_TITLE, strlen(DEFAULT_WM_TITLE) + 1 );

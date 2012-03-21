@@ -22,20 +22,30 @@
  */
 
 #include "ONScripter.h"
+#include "onslocale.h"
+
+#define LOC_TWOBYTE_SYMBOL(x) (onsLocaleGet2BAsciiSymbolStr() + (((x)-0x20)*2))
 
 extern unsigned short convSJIS2UTF16( unsigned short in );
+extern int onsLocaleIsRotationRequired(const unsigned char *x);
+extern int onsLocaleIsTranslationRequired(const unsigned char *x);
+extern int onsLocaleIsTwoByte(unsigned char x);
 
-#define IS_ROTATION_REQUIRED(x)	\
-    (!IS_TWO_BYTE(*(x)) ||                                              \
-     (*(x) == (char)0x81 && *((x)+1) == (char)0x50) ||                  \
-     (*(x) == (char)0x81 && *((x)+1) == (char)0x51) ||                  \
-     (*(x) == (char)0x81 && *((x)+1) >= 0x5b && *((x)+1) <= 0x5d) ||    \
-     (*(x) == (char)0x81 && *((x)+1) >= 0x60 && *((x)+1) <= 0x64) ||    \
-     (*(x) == (char)0x81 && *((x)+1) >= 0x69 && *((x)+1) <= 0x7a) ||    \
-     (*(x) == (char)0x81 && *((x)+1) == (char)0x80) )
+#define IS_TWO_BYTE(x) (onsLocaleIsTwoByte((unsigned char)(x)))
+#define IS_ROTATION_REQUIRED(x) (onsLocaleIsRotationRequired((const unsigned char *)(x)))
+#define IS_TRANSLATION_REQUIRED(x) (onsLocaleIsTranslationRequired((const unsigned char *)(x)))
 
-#define IS_TRANSLATION_REQUIRED(x)	\
-        ( *(x) == (char)0x81 && *((x)+1) >= 0x41 && *((x)+1) <= 0x44 )
+//#define IS_ROTATION_REQUIRED(x)	\
+//    (!IS_TWO_BYTE(*(x)) ||                                              \
+//     (*(x) == (char)0x81 && *((x)+1) == (char)0x50) ||                  \
+//     (*(x) == (char)0x81 && *((x)+1) == (char)0x51) ||                  \
+//     (*(x) == (char)0x81 && *((x)+1) >= 0x5b && *((x)+1) <= 0x5d) ||    \
+//     (*(x) == (char)0x81 && *((x)+1) >= 0x60 && *((x)+1) <= 0x64) ||    \
+//     (*(x) == (char)0x81 && *((x)+1) >= 0x69 && *((x)+1) <= 0x7a) ||    \
+//     (*(x) == (char)0x81 && *((x)+1) == (char)0x80) )
+//
+//#define IS_TRANSLATION_REQUIRED(x)	\
+//        ( *(x) == (char)0x81 && *((x)+1) >= 0x41 && *((x)+1) <= 0x44 )
 
 SDL_Surface *ONScripter::renderGlyph(TTF_Font *font, Uint16 text)
 {
@@ -76,7 +86,7 @@ void ONScripter::drawGlyph( SDL_Surface *dst_surface, FontInfo *info, SDL_Color 
     if (IS_TWO_BYTE(text[0])){
         unsigned index = ((unsigned char*)text)[0];
         index = index << 8 | ((unsigned char*)text)[1];
-        unicode = convSJIS2UTF16( index );
+        unicode = onsLocaleConv( index );
     }
     else{
         if ((text[0] & 0xe0) == 0xa0 || (text[0] & 0xe0) == 0xc0) unicode = ((unsigned char*)text)[0] - 0xa0 + 0xff60;
@@ -152,8 +162,8 @@ void ONScripter::drawChar( char* text, FontInfo *info, bool flush_flag, bool loo
         info->newLine();
         for (int i=0 ; i<indent_offset ; i++){
             if (lookback_flag){
-                current_page->add(0x81);
-                current_page->add(0x40);
+                current_page->add(LOC_TWOBYTE_SYMBOL(' ')[0]);
+                current_page->add(LOC_TWOBYTE_SYMBOL(' ')[1]);
             }
             info->advanceCharInHankaku(2);
         }
@@ -595,8 +605,8 @@ int ONScripter::textCommand()
     if (buf[string_buffer_offset] == '[')
         string_buffer_offset++;
     else if (zenkakko_flag && 
-             buf[string_buffer_offset  ] == "Åy"[0] && 
-             buf[string_buffer_offset+1] == "Åy"[1])
+             buf[string_buffer_offset ] == "°æ"[0] && 
+             buf[string_buffer_offset+1] == "°æ"[1])
         string_buffer_offset += 2;
     else
         tag_flag = false;
@@ -605,8 +615,8 @@ int ONScripter::textCommand()
     int end_offset = start_offset;
     while (tag_flag && buf[string_buffer_offset]){
         if (zenkakko_flag && 
-            buf[string_buffer_offset  ] == "Åz"[0] && 
-            buf[string_buffer_offset+1] == "Åz"[1]){
+            buf[string_buffer_offset ] == "°ø"[0] && 
+            buf[string_buffer_offset+1] == "°ø"[1]){
             end_offset = string_buffer_offset;
             string_buffer_offset += 2;
             break;
@@ -702,8 +712,8 @@ void ONScripter::processEOT()
         if (page_enter_status == 1){
             n = sentence_font.num_xy[0] - sentence_font.xy[0]/2;
             for (i=0 ; i<n ; i++){
-                current_page->add(0x81);
-                current_page->add(0x40);
+                current_page->add(LOC_TWOBYTE_SYMBOL(' ')[0]);
+                current_page->add(LOC_TWOBYTE_SYMBOL(' ')[1]);
                 sentence_font.advanceCharInHankaku(2);
             }
         }
@@ -743,8 +753,8 @@ bool ONScripter::processText()
             sentence_font.newLine();
             current_page->add(0x0a);
             for (int i=0 ; i<indent_offset ; i++){
-                current_page->add(0x81);
-                current_page->add(0x40);
+                current_page->add(LOC_TWOBYTE_SYMBOL(' ')[0]);
+                current_page->add(LOC_TWOBYTE_SYMBOL(' ')[1]);
                 sentence_font.advanceCharInHankaku(2);
             }
         }
