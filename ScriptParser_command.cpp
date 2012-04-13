@@ -226,7 +226,6 @@ int ScriptParser::sinCommand()
 
 int ScriptParser::shadedistanceCommand()
 {
-    if (current_mode != DEFINE_MODE) errorAndExit( "shadedistance: not in the define section" );
     shade_distance[0] = script_h.readInt() * screen_ratio1 / screen_ratio2;
     if (shade_distance[0] == 0) shade_distance[0] = 1;
     shade_distance[1] = script_h.readInt() * screen_ratio1 / screen_ratio2;
