@@ -18,7 +18,7 @@
 最近あまり時間がとれないため更新が非常に遅くなることがありますがご了承下さい。<br>
 Since: Feb. 6, 2002<br>
 <!--Last updated: Sep. 12, 2010 (サーバ移行)<br>-->
-Last updated: Mar. 20, 2012 (ソース更新)<br>
+Last updated: Apr. 5, 2012 (ソース更新)<br>
 <!--Last updated: May 25, 2010 (バイナリパッケージ追加・修正)<br>-->
 <!--Last updated: Jul. 12, 2009 (Experimental ソース更新)<br>-->
 </div> <!-- header -->
@@ -86,10 +86,10 @@ Last updated: Mar. 20, 2012 (ソース更新)<br>
 
 <table><tr>
 <td>最新版</td>
-<td><a href="onscripter-20120320.tar.gz">onscripter-20120320.tar.gz</a></td>
+<td><a href="onscripter-20120405.tar.gz">onscripter-20120405.tar.gz</a></td>
 </tr><tr>
 <td>旧版</td>
-<td><a href="onscripter-20120318.tar.gz">onscripter-20120318.tar.gz</a></td>
+<td><a href="onscripter-20120320.tar.gz">onscripter-20120320.tar.gz</a></td>
 </tr></table>
 <!--  <li> <a href="onscripter-exp-20090712.tar.gz">onscripter-exp-20090712.tar.gz</a>(実験版, バグ修正)-->
 
@@ -141,10 +141,7 @@ Last updated: Mar. 20, 2012 (ソース更新)<br>
 
 </table>
 
-<p>ONScripter-EN とは、Uncle Mion さんによって英語のスクリプトがうまく
-扱えるように拡張された ONScripter です。サポートされているコマンドも 
-ONScripter より充実しています。従来の日本語のスクリプトも問題なく実行
-できるようです。</p>
+<p>ONScripter-EN とは、Uncle Mion さんによって英語のスクリプトがうまく扱えるように拡張された ONScripter です。サポートされている命令も ONScripter より充実しています。従来の日本語のスクリプトも問題なく実行できるようです。</p>
 
 </div> <!-- sub-content -->
 
@@ -157,7 +154,7 @@ ONScripter より充実しています。従来の日本語のスクリプトも問題なく実行
   <li> 全ての操作をキーボードから行えます。もちろんマウスも使えます。
   <li> CD Audio の演奏を音楽ファイル(MP3, Ogg)の演奏に振り替える機能があります。
   <li> マルチプラットフォームに対応しており、Windows, Linux, MacOS X, MacOS 9, <a href="android/android.html">Android</a>(1.6 以上), iPhone, iPad, PSP, <a href="zaurus/index.html">Zaurus</a>(SL-5500,SL-A300,SL-B500,SL-C700), FreeBSD, Solaris(on SPARC), Tru64 UNIX, OS/2Warp, iPod, PocketPC, Playstation3, Wii, GP2X, NetWalker, Dreamcast での動作が確認されています。それ以外のプラットフォームでも、<a href="#environment">動作環境</a>が準備できれば動作するはずです。<br>
-  <li> 全てのコマンド・仕様を実装していないため、ゲームによっては挙動がおかしくなります。その場合は上記バグトラッキングシステムまで御報告下さい。
+  <li> 全ての命令・仕様を実装していないため、ゲームによっては挙動がおかしくなります。その場合は上記バグトラッキングシステムまで御報告下さい。
 </ol>
 
 </div> <!-- sub-content -->
@@ -198,7 +195,7 @@ Ogg Vorbis 形式の音楽ファイルを再生する場合には入れてください。同梱の Makefile.L
 整数演算のみを使用した MP3 演奏ライブラリです。Android や Zaurus で MP3 を演奏する場合には必須です。MAD を使用するためには、SMPEG の代わりに MAD を有効にしてコンパイルした SDL_mixer を使用してください。
 
   <li> avifile-0.7.48 (<a href="http://avifile.sourceforge.net/">avifile</a>)<br>
-avi コマンドを使ってムービーを再生する場合には入れてください。Linux で動作確認をしています。USE_AVIFILE を定義し AVIWrapper.o をリンクしてコンパイルすると使用されます。
+avi 命令を使ってムービーを再生する場合には入れてください。Linux で動作確認をしています。USE_AVIFILE を定義し AVIWrapper.o をリンクしてコンパイルすると使用されます。
 </ul>
 
 <p>当方では Linux (Debian Squeeze), <a href="android/android.html">Android</a> (HTC Desire (2.3)), <a href="ios/">iOS</a> (iPad2), (時々 Windows) で動作確認をしています。</p>
@@ -236,7 +233,7 @@ avi コマンドを使ってムービーを再生する場合には入れてください。Linux で動作確認を
   <li> (<span style="color:#ff8800">中</span>)右クリックからの windowerase を実行する時に windoweffect の効果を反映させる。
   <li> (<span style="color:#ff8800">中</span>)bgcopy で取得した画像をセーブ時にファイルに保存するようにする。
   <li> (<span style="color:#ff8800">中</span>)文字の影が既に描画されている文字にかぶった場合に対処する。
-  <li> (<span style="color:#00ff00">低</span>)正式な英語モード(english コマンド)への移行。
+  <li> (<span style="color:#00ff00">低</span>)正式な英語モード(english 命令)への移行。
   <li> (<span style="color:#00ff00">低</span>)existspbtn を spbtn として実装しているが、それでよいのかを検証する。
   <li> (<span style="color:#00ff00">低</span>)コードの clean up。
 </OL>       
@@ -282,7 +279,7 @@ avi コマンドを使ってムービーを再生する場合には入れてください。Linux で動作確認を
 <tr><td> a </td><td>automode もしくは mode_ext が設定されている場合に、読み上げモードに入る</td></tr>
 <tr><td> z </td><td>--edit オプションを指定して起動したときに、音量及び変数変更モードに入る</td></tr>
 <tr><td> 1, 2, 3 </td><td>文字の描画速度を変更</td></tr>
-<tr><td> Shift + q </td><td>終了（end コマンドを発行）</td></tr>
+<tr><td> Shift + q </td><td>終了（end 命令を発行）</td></tr>
 </table>
 
 </div> <!-- sub-content -->
@@ -303,7 +300,7 @@ avi コマンドを使ってムービーを再生する場合には入れてください。Linux で動作確認を
 <tr><td>-r,--root path</td><td>使用するゲームファイルのあるディレクトリを指定します。</td></tr>
 <tr><td>--fullscreen</td><td>フルスクリーンモードで起動します。</td></tr>
 <tr><td>--window</td><td>ウィンドウモードで起動します。</td></tr>
-<tr><td>--force-button-shortcut</td><td>getenter と useescspc のコマンドを無視します。つまり、マウスのクリックを強制的に esc, space, return キーに割り付けます。</td></tr>
+<tr><td>--force-button-shortcut</td><td>getenter と useescspc の命令を無視します。つまり、マウスのクリックを強制的に esc, space, return キーに割り付けます。</td></tr>
 <tr><td>--enable-wheeldown-advance</td><td>テキスト終端でのクリック待ちの際に、マウスのホイールダウン操作をクリック操作として扱います。textgosub でクリック待ちをカスタマイズしているときには効果はありません。</td></tr>
 <tr><td>--disable-rescale</td><td>PDA_WIDTH や PDA_AUTOSIZE を定義してコンパイルした ONScripter において、アーカイブから画像を読み込む際に、画像の大きさを端末のスクリーンの大きさに変換しないようにします。あらかじめ<a href="#archive-compression">アーカイブ圧縮</a>によって画像の大きさを端末のスクリーンの大きさに変換しておいたアーカイブを一緒に使用すると、変換処理が省略されるため動作が高速になります。ただし、この場合でもアーカイブ外の画像ファイルは大きさが変換されます。</td></tr>
 <tr><td>--edit</td><td>z キーを押したときに、音量及び変数の編集モードに入れるようになります。</td></tr>
@@ -378,7 +375,7 @@ avi コマンドを使ってムービーを再生する場合には入れてください。Linux で動作確認を
 <div class="sub-content">
 <h3 id="registry">レジストリ読み込み</h3>
 
-<p>getreg コマンドは Windows の registry から指定されたデータを取得し
+<p>getreg 命令は Windows の registry から指定されたデータを取得し
 ます。ONScripter では、テキストファイル registry.txt にデータを記述し、
 これを読み込むことでこの機能を実現します。</p>
 
@@ -413,7 +410,7 @@ registry.txt を一カ所にまとめておくことができます。--registry を指定し
 <div class="sub-content">
 <h3 id="dll">DLL 読み込み</h3>
 
-<p>exec_dll コマンドは Windows 上で実行可能な DLL (Dynamic Link
+<p>exec_dll 命令は Windows 上で実行可能な DLL (Dynamic Link
 Library) を実行します。ONScripter では、テキストファイル dll.txt に 
 DLL 名とその戻値の対応を記述し、これを読み込むことでこの機能を実現しま
 す。従って、実際に DLL が実行されるわけではなく、また戻値は固定になり
@@ -511,7 +508,7 @@ cd/track14.xxx<br>
 音楽ファイルのフォーマットは mp3, ogg, wav 形式に対応しています。上の
 xxxは、使用するフォーマットに合わせて変更してください。</p>
 
-<p>スクリプト中の CD audio の１曲目を演奏するコマンドは、
+<p>スクリプト中の CD audio の１曲目を演奏する命令は、
 &quot;track01.mp3&quot; (mp3 形式の場合)を演奏するように変更されます。
 &quot;--cdaudio&quot;オプションが指定されていないかぎり、これがデフォ
 ルトの挙動となります。音楽ファイルが見つからない場合は、演奏せずに続行
@@ -593,7 +590,7 @@ xxxは、使用するフォーマットに合わせて変更してください。</p>
 ...
 </pre>
 
-<p>NSA アーカイブのバージョン１と２と３の区別は手動です。スクリプトで ns2 コマンドが使われていればバージョン２、ns3 コマンドが使われていればバージョン３です。スクリプトが確認できない場合は、まず -ns2 を付けずに試し、うまくいかなかったら -ns2 もしくは -ns3 を付けて試してください。</p>
+<p>NSA アーカイブのバージョン１と２と３の区別は手動です。スクリプトで ns2 命令が使われていればバージョン２、ns3 命令が使われていればバージョン３です。スクリプトが確認できない場合は、まず -ns2 を付けずに試し、うまくいかなかったら -ns2 もしくは -ns3 を付けて試してください。</p>
 
 <p>-e オプションを付けると、wav と bmp ファイルを nbz 圧縮します。これを行うと、NSA アーカイブの圧縮の種類を示すフラグに ONScripter 独自の値を設定します。この独自拡張については、本家が将来アーカイブの仕様を拡張したときにバッティングする可能性がありますが、その時はそれを回避するようにコンバータを修正し、再コンバートすることで解決できます。その場合でも、save file 等には一切影響がありませんので、Zaurus で使用される方はこのオプションを付けてコンバートすることをお勧めします。wav を bzip2 で圧縮するので、wav を多用するゲームではかなりアーカイブが小さくなります。デメリットとしては、bzip2 の復号を行うため若干遅くなりますが、気が付かない程度です。</p>
 
