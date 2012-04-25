@@ -1197,14 +1197,16 @@ int ONScripter::ofscopyCommand()
 {
 #ifdef USE_SDL_RENDERER
     SDL_Surface *tmp_surface = AnimationInfo::alloc32bitSurface( screen_device_width, screen_device_height, texture_format );
-    SDL_Rect rect = {0, 0, screen_device_width, screen_device_height};
+    SDL_Rect rect = {(device_width -screen_device_width)/2,
+                     (device_height-screen_device_height)/2,
+                     screen_device_width, screen_device_height};
     SDL_LockSurface(tmp_surface);
     SDL_RenderReadPixels(renderer, &rect, tmp_surface->format->format, tmp_surface->pixels, tmp_surface->pitch);
     SDL_UnlockSurface(tmp_surface);
     resizeSurface( tmp_surface, accumulation_surface );
     SDL_FreeSurface(tmp_surface);
 #else
-    SDL_BlitSurface( screen_surface, NULL, accumulation_surface, NULL );
+    SDL_BlitSurface(screen_surface, NULL, accumulation_surface, NULL);
 #endif
 
     return RET_CONTINUE;
@@ -1442,8 +1444,10 @@ int ONScripter::movemousecursorCommand()
 {
     int x = script_h.readInt() * screen_ratio1 / screen_ratio2;
     int y = script_h.readInt() * screen_ratio1 / screen_ratio2;
+    x = x * screen_device_width / screen_width;
+    y = y * screen_device_width / screen_width;
 
-    SDL_WarpMouse( x, y );
+    SDL_WarpMouse(x, y);
     
     return RET_CONTINUE;
 }
@@ -2151,12 +2155,14 @@ int ONScripter::getscreenshotCommand()
     screenshot_w = w;
     screenshot_h = h;
 #ifdef USE_SDL_RENDERER
-    SDL_Rect rect = {0, 0, screen_device_width, screen_device_height};
+    SDL_Rect rect = {(device_width -screen_device_width)/2, 
+                     (device_height-screen_device_height)/2,
+                     screen_device_width, screen_device_height};
     SDL_LockSurface(screenshot_surface);
     SDL_RenderReadPixels(renderer, &rect, screenshot_surface->format->format, screenshot_surface->pixels, screenshot_surface->pitch);
     SDL_UnlockSurface(screenshot_surface);
 #else
-    SDL_BlitSurface( screen_surface, NULL, screenshot_surface, NULL);
+    SDL_BlitSurface(screen_surface, NULL, screenshot_surface, NULL);
 #endif
 
     return RET_CONTINUE;
@@ -3319,10 +3325,10 @@ int ONScripter::bltCommand()
     int dx,dy,dw,dh;
     int sx,sy,sw,sh;
 
-    dx = script_h.readInt() * screen_ratio1 / screen_ratio2 * screen_device_width / screen_width;
-    dy = script_h.readInt() * screen_ratio1 / screen_ratio2 * screen_device_width / screen_width;
-    dw = script_h.readInt() * screen_ratio1 / screen_ratio2 * screen_device_width / screen_width;
-    dh = script_h.readInt() * screen_ratio1 / screen_ratio2 * screen_device_width / screen_width;
+    dx = script_h.readInt() * screen_ratio1 / screen_ratio2;
+    dy = script_h.readInt() * screen_ratio1 / screen_ratio2;
+    dw = script_h.readInt() * screen_ratio1 / screen_ratio2;
+    dh = script_h.readInt() * screen_ratio1 / screen_ratio2;
     sx = script_h.readInt() * screen_ratio1 / screen_ratio2;
     sy = script_h.readInt() * screen_ratio1 / screen_ratio2;
     sw = script_h.readInt() * screen_ratio1 / screen_ratio2;
@@ -3337,6 +3343,10 @@ int ONScripter::bltCommand()
         SDL_Rect dst_rect = {dx,dy,dw,dh};
 
 #ifdef USE_SDL_RENDERER
+        dst_rect.dx = dst_rect.dx * screen_device_width / screen_width + (device_width -screen_device_width )/2;
+        dst_rect.dy = dst_rect.dy * screen_device_width / screen_width + (device_height-screen_device_height)/2;
+        dst_rect.dw = dst_rect.dw * screen_device_width / screen_width;
+        dst_rect.dh = dst_rect.dh * screen_device_width / screen_width;
         SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, btndef_info.image_surface);
         SDL_RenderCopy(renderer, texture, &src_rect, &dst_rect);
         SDL_RenderPresent(renderer);

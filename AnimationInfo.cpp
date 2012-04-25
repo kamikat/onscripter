@@ -671,12 +671,20 @@ void AnimationInfo::calcAffineMatrix()
 
 SDL_Surface *AnimationInfo::allocSurface( int w, int h, Uint32 texture_format )
 {
+    SDL_Surface *surface;
     if (texture_format == SDL_PIXELFORMAT_RGB565)
-        return SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 16, 0xf800, 0x07e0, 0x001f, 0);
+        surface = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 16, 0xf800, 0x07e0, 0x001f, 0);
     else if (texture_format == SDL_PIXELFORMAT_ABGR8888)
-        return SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+        surface = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
     else // texture_format == SDL_PIXELFORMAT_ARGB8888
-        return SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+        surface = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+
+    SDL_SetAlpha(surface, 0, SDL_ALPHA_OPAQUE);
+#if defined(USE_RENDERER) || defined(ANDROID)
+    SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
+#endif
+
+    return surface;
 }
 
 SDL_Surface *AnimationInfo::alloc32bitSurface( int w, int h, Uint32 texture_format )

@@ -116,15 +116,12 @@ void ONScripter::initSDL()
     screen_device_width  = screen_width;
     screen_device_height = screen_height;
 #if defined(USE_SDL_RENDERER)
-    if (screen_device_width > script_h.screen_width){ // use hardware scaling
-        screen_ratio1 = 1;
-        screen_ratio2 = 1;
-        screen_width  = script_h.screen_width;
-        screen_height = script_h.screen_height;
-    }
-#endif
+    // use hardware scaling
+    screen_ratio1 = 1;
+    screen_ratio2 = 1;
+    screen_width  = script_h.screen_width;
+    screen_height = script_h.screen_height;
 
-#ifdef USE_SDL_RENDERER
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
@@ -143,11 +140,23 @@ void ONScripter::initSDL()
         texture_format = SDL_PIXELFORMAT_ABGR8888;
     SDL_RenderClear(renderer);
 #else
-    screen_surface = SDL_SetVideoMode( screen_device_width, screen_device_height, screen_bpp, DEFAULT_VIDEO_SURFACE_FLAG|(fullscreen_mode?SDL_FULLSCREEN:0) );
+#if defined(ANDROID)
+    // use hardware scaling
+    screen_ratio1 = 1;
+    screen_ratio2 = 1;
+    screen_width  = script_h.screen_width;
+    screen_height = script_h.screen_height;
+#endif
+    screen_surface = SDL_SetVideoMode( screen_width, screen_height, screen_bpp, DEFAULT_VIDEO_SURFACE_FLAG|(fullscreen_mode?SDL_FULLSCREEN:0) );
 #ifdef BPP16
     texture_format = SDL_PIXELFORMAT_RGB565;
 #else
+#if defined(ANDROID)
+    SDL_SetSurfaceBlendMode(screen_surface, SDL_BLENDMODE_NONE);
+    texture_format = SDL_PIXELFORMAT_ABGR8888;
+#else
     texture_format = SDL_PIXELFORMAT_ARGB8888;
+#endif
 #endif
 #endif
 
@@ -361,12 +370,12 @@ int ONScripter::init()
     backup_surface       = AnimationInfo::allocSurface( screen_width, screen_height, texture_format );
     effect_src_surface   = AnimationInfo::allocSurface( screen_width, screen_height, texture_format );
     effect_dst_surface   = AnimationInfo::allocSurface( screen_width, screen_height, texture_format );
-    SDL_SetAlpha( accumulation_surface, 0, SDL_ALPHA_OPAQUE );
-    SDL_SetAlpha( backup_surface, 0, SDL_ALPHA_OPAQUE );
-    SDL_SetAlpha( effect_src_surface, 0, SDL_ALPHA_OPAQUE );
-    SDL_SetAlpha( effect_dst_surface, 0, SDL_ALPHA_OPAQUE );
-    
+
+#if defined(USE_SDL_RENDERER)
     screenshot_surface = AnimationInfo::alloc32bitSurface( screen_device_width, screen_device_height, texture_format );
+#else
+    screenshot_surface = AnimationInfo::alloc32bitSurface( screen_width, screen_height, texture_format );
+#endif
     screenshot_w = screen_width;
     screenshot_h = screen_height;
 
@@ -515,6 +524,7 @@ void ONScripter::reset()
     }
 
     current_over_button = 0;
+    shift_over_button = -1;
     num_fingers = 0;
     variable_edit_mode = NOT_EDIT_MODE;
 
@@ -683,9 +693,9 @@ void ONScripter::mouseOverCheck( int x, int y )
     while( bl ){
         if ( x >= bl->select_rect.x && x < bl->select_rect.x + bl->select_rect.w &&
              y >= bl->select_rect.y && y < bl->select_rect.y + bl->select_rect.h ){
-            if (transbtn_flag == false ||
-                (x == bl->select_rect.x && y == bl->select_rect.y)){ // possibley possibly warped by keyboard shortcut
-                button = bl->no;
+            if (transbtn_flag == false || shift_over_button == bl->no){
+                max_bl = bl;
+                max_c = c;
                 break;
             }
             else{
@@ -778,7 +788,9 @@ void ONScripter::mouseOverCheck( int x, int y )
         flush( refreshMode() );
         dirty_rect = dirty;
     }
+
     current_over_button = button;
+    shift_over_button = -1;
 }
 
 void ONScripter::executeLabel()
@@ -929,8 +941,11 @@ void ONScripter::refreshMouseOverButton()
 {
     int mx, my;
     current_over_button = 0;
+    shift_over_button = -1;
     current_button_link = root_button_link.next;
     SDL_GetMouseState( &mx, &my );
+    mx = mx * screen_width / screen_device_width;
+    my = my * screen_width / screen_device_width;
     mouseOverCheck( mx, my );
 }
 

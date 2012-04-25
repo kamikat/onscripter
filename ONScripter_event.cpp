@@ -707,12 +707,15 @@ void ONScripter::shiftCursorOnButton( int diff )
         button  = button->next;
     
     if (button){
-        int x = button->select_rect.x;
-        int y = button->select_rect.y;
+        int x = button->select_rect.x + button->select_rect.w/2;
+        int y = button->select_rect.y + button->select_rect.h/2;
         if      (x < 0)             x = 0;
         else if (x >= screen_width) x = screen_width-1;
         if      (y < 0)              y = 0;
         else if (y >= screen_height) y = screen_height-1;
+        x = x * screen_device_width / screen_width;
+        y = y * screen_device_width / screen_width;
+        shift_over_button = button->no;
         SDL_WarpMouse(x, y);
     }
 }
@@ -1248,7 +1251,7 @@ void ONScripter::runEventLoop()
             if ( !event.active.gain ) break;
 #ifdef ANDROID
             if (event.active.state == SDL_APPACTIVE){
-                screen_surface = SDL_SetVideoMode( screen_device_width, screen_device_height, screen_bpp, DEFAULT_VIDEO_SURFACE_FLAG );
+                screen_surface = SDL_SetVideoMode( screen_width, screen_height, screen_bpp, DEFAULT_VIDEO_SURFACE_FLAG );
                 repaintCommand();
                 break;
             }
