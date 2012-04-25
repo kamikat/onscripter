@@ -479,6 +479,7 @@ private:
     bool is_exbtn_enabled;
 
     int current_over_button;
+    int shift_over_button;
 
     bool bexec_flag;
     bool getzxc_flag;
