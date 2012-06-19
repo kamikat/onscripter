@@ -28,7 +28,7 @@ OBJSUFFIX = .o
 .SUFFIXES: $(OBJSUFFIX) .cpp .h
 
 CC = arm-apple-darwin-g++ 
-LD = arm-apple-darwin-g++ -o 
+LD = arm-apple-darwin-g++ -o
 
 #CFLAGS = -g -Wall -Wpointer-arith -pipe -c $(INCS) $(DEFS)
 CFLAGS = -O3 -Wall -Wpointer-arith -pipe -c $(INCS) $(DEFS)

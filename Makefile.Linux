@@ -30,7 +30,7 @@ OBJSUFFIX = .o
 
 # for GNU g++
 CC = g++ 
-LD = g++ -o 
+LD = g++ -o
 
 #CFLAGS = -g -Wall -pipe -c $(INCS) $(DEFS)
 CFLAGS = -O3 -Wall -fomit-frame-pointer -pipe -c $(INCS) $(DEFS)
