@@ -358,10 +358,6 @@ int ONScripter::openScript()
 
 int ONScripter::init()
 {
-#ifdef USE_LUA
-    lua_handler.init(this, &script_h);
-#endif    
-
     initSDL();
     openAudio();
 
@@ -480,6 +476,9 @@ int ONScripter::init()
     for (i=0 ; i<MAX_PARAM_NUM ; i++) bar_info[i] = prnum_info[i] = NULL;
 
     defineresetCommand();
+#ifdef USE_LUA
+    lua_handler.init(this, &script_h);
+#endif    
     readToken();
 
     if ( sentence_font.openFont( font_file, screen_ratio1, screen_ratio2 ) == NULL ){
