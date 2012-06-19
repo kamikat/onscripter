@@ -365,6 +365,7 @@ protected:
     int  num_chars_in_sentence;
     int  line_enter_status; // 0 ... no enter, 1 ... pretext, 2 ... body
     int  page_enter_status; // 0 ... no enter, 1 ... body until @,\ used when pagetag is enabled
+    bool in_textbtn_flag;
     bool english_mode;
 
     struct Kinsoku {

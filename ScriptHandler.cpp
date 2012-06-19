@@ -177,7 +177,7 @@ const char *ScriptHandler::readToken()
              (ch >= '0' && ch <= '9') ||
              ch == '@' || ch == '\\' || ch == '/' ||
              ch == '%' || ch == '?' || ch == '$' ||
-             ch == '[' || ch == '(' ||
+             ch == '[' || ch == '(' || ch == '<' ||
 #ifndef ENABLE_1BYTE_CHAR
              ch == '`' ||
 #endif             
