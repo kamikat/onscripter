@@ -7,9 +7,9 @@ PREF = /usr/local/devkitPro/devkitGP2X
 
 INCS = `$(PREF)/bin/sdl-config --cflags` `$(PREF)/bin/freetype-config --cflags`
 
-LIBS = -static `$(PREF)/bin/sdl-config --static-libs` -lSDL_ttf -lSDL_image -lSDL_mixer -lSDL -lmikmod -lmad -lfreetype -ljpeg -lpng -lz -lbz2 -lvorbisidec
+LIBS = -static `$(PREF)/bin/sdl-config --static-libs` -lSDL_ttf -lSDL_image -lSDL_mixer -lSDL -lmikmod -lfreetype -ljpeg -lpng -lz -lbz2 -lvorbisidec
 
-DEFS = -DGP2X -DLINUX -DPDA_WIDTH=320 -DBPP16 -DMP3_MAD -DUSE_OGG_VORBIS -DINTEGER_OGG_VORBIS
+DEFS = -DGP2X -DLINUX -DPDA_WIDTH=320 -DBPP16 -DUSE_OGG_VORBIS -DINTEGER_OGG_VORBIS
 
 EXESUFFIX = .gpe
 OBJSUFFIX = .o

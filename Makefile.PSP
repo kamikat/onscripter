@@ -10,7 +10,7 @@ PSPSDK = $(shell psp-config --pspsdk-path)
 
 INCS  = $(shell $(PSPPRE)/bin/sdl-config --cflags) $(shell $(PSPPRE)/bin/freetype-config --cflags)
 LIBS  = $(shell $(PSPPRE)/bin/sdl-config --libs)
-LIBS += -lSDL_ttf -lfreetype -lSDL_mixer -lSDL_image -lSDL -lSDLmain -lbz2 -ljpeg -lpng -lz -lmad -lvorbisidec
+LIBS += -lSDL_ttf -lfreetype -lSDL_mixer -lSDL_image -lSDL -lSDLmain -lbz2 -ljpeg -lpng -lz -lvorbisidec
 
 # Include PSPSDK and Libc Headers
 INCS += -I$(PSPSDK)/include -I$(PSPDEV)/include -I$(PSPPRE)/include
@@ -20,11 +20,11 @@ LIBS += -L$(PSPSDK)/lib -L$(PSPDEV)/lib -lstdc++ -lc -lm -lpsppower -lpspnet_ine
 
 
 # with OggVorbis (Tremor) in PDA size (QVGA)
-#DEFS = -DPSP -DPDA_WIDTH=320 -DBPP16 -DMP3_MAD -DUSE_OGG_VORBIS -DINTEGER_OGG_VORBIS
+#DEFS = -DPSP -DPDA_WIDTH=320 -DBPP16 -DUSE_OGG_VORBIS -DINTEGER_OGG_VORBIS
 # with OggVorbis (Tremor) in PSP size (360x270)
-DEFS = -DPSP -DPDA_WIDTH=360 -DBPP16 -DMP3_MAD -DUSE_OGG_VORBIS -DINTEGER_OGG_VORBIS
+DEFS = -DPSP -DPDA_WIDTH=360 -DBPP16 -DUSE_OGG_VORBIS -DINTEGER_OGG_VORBIS
 # with OggVorbis (Tremor) in PSP size (384x288)
-#DEFS = -DPSP -DPDA_WIDTH=384 -DBPP16 -DMP3_MAD -DUSE_OGG_VORBIS -DINTEGER_OGG_VORBIS
+#DEFS = -DPSP -DPDA_WIDTH=384 -DBPP16 -DUSE_OGG_VORBIS -DINTEGER_OGG_VORBIS
 
 EXESUFFIX = .elf
 OBJSUFFIX = .o

@@ -6,9 +6,9 @@
 INCS = `sdl-config --cflags`
 
 # for Qtopia
-LIBS = -lSDL -lSDL_ttf -lSDL_image -lSDL_mixer -lbz2 -lfreetype -lmad -ljpeg -lm `sdl-config --libs` -lvorbisidec
+LIBS = -lSDL -lSDL_ttf -lSDL_image -lSDL_mixer -lbz2 -lfreetype -ljpeg -lm `sdl-config --libs` -lvorbisidec
 # for SL-5500, SL-A300, SL-B500, SL-C700 and SL-C750
-DEFS = -DLINUX -DPDA_WIDTH=640 -DBPP16 -DQWS -DMP3_MAD -DUSE_OGG_VORBIS -DINTEGER_OGG_VORBIS
+DEFS = -DLINUX -DPDA_WIDTH=640 -DBPP16 -DQWS -DUSE_OGG_VORBIS -DINTEGER_OGG_VORBIS
 
 EXESUFFIX =
 OBJSUFFIX = .o

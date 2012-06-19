@@ -86,7 +86,7 @@ void playVideoAndroid(const char *filename)
 #include "AVIWrapper.h"
 #endif
 
-#ifndef MP3_MAD
+#if defined(USE_SMPEG)
 #include <smpeg.h>
 extern "C" void mp3callback( void *userdata, Uint8 *stream, int len )
 {
@@ -258,7 +258,7 @@ int ONScripter::playMPEG(const char *filename, bool click_flag, bool loop_flag)
 #endif
 
     int ret = 0;
-#if !defined(MP3_MAD) && !defined(USE_SDL_RENDERER)
+#if defined(USE_SMPEG) && !defined(USE_SDL_RENDERER)
     unsigned char *mpeg_buffer = new unsigned char[length];
     script_h.cBR->getFile( filename, mpeg_buffer );
     SMPEG *mpeg_sample = SMPEG_new_rwops( SDL_RWFromMem( mpeg_buffer, length ), NULL, 0 );

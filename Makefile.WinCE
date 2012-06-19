@@ -7,13 +7,13 @@ PREF = /usr/local/mingw32ce/arm-wince-mingw32ce
 
 INCS = `$(PREF)/bin/sdl-config --cflags` `$(PREF)/bin/freetype-config --cflags`
 
-LIBS = -static `$(PREF)/bin/sdl-config --libs` -lSDL_ttf -lSDL_image -lSDL_mixer -lSDL -lmad -lfreetype -ljpeg -lpng -lz -lbz2
+LIBS = -static `$(PREF)/bin/sdl-config --libs` -lSDL_ttf -lSDL_image -lSDL_mixer -lSDL -lfreetype -ljpeg -lpng -lz -lbz2
 
 # QVGA (320x240)
-#DEFS = -DWINCE -DWIN32 -DPDA_WIDTH=320 -DBPP16 -DMP3_MAD
+#DEFS = -DWINCE -DWIN32 -DPDA_WIDTH=320 -DBPP16
 
 # VGA (640x480)
-DEFS = -DWINCE -DWIN32 -DPDA_WIDTH=640 -DBPP16 -DMP3_MAD
+DEFS = -DWINCE -DWIN32 -DPDA_WIDTH=640 -DBPP16
 
 EXESUFFIX = .exe
 OBJSUFFIX = .o
