@@ -264,6 +264,19 @@ void ONScripter::drawString( const char *str, uchar3 color, FontInfo *info, bool
                 str++;
                 continue;
             }
+            else if (*str == '<'){
+                str++;
+                int no = 0;
+                while(*str>='0' && *str<='9')
+                    no=no*10+(*str++)-'0';
+                in_textbtn_flag = true;
+                continue;
+            }
+            else if (*str == '>' && in_textbtn_flag){
+                str++;
+                in_textbtn_flag = false;
+                continue;
+            }
         }
 #endif
 
@@ -338,6 +351,17 @@ void ONScripter::restoreTextBuffer(SDL_Surface *surface)
             }
             else if (out_text[0] == ')' && ruby_struct.stage == RubyStruct::BODY ){
                 ruby_struct.stage = RubyStruct::NONE;
+                continue;
+            }
+            else if (out_text[0] == '<'){
+                int no = 0;
+                while(current_page->text[i+1]>='0' && current_page->text[i+1]<='9')
+                    no=no*10+current_page->text[(i++)+1]-'0';
+                in_textbtn_flag = true;
+                continue;
+            }
+            else if (out_text[0] == '>' && in_textbtn_flag){
+                in_textbtn_flag = false;
                 continue;
             }
 #endif
@@ -899,6 +923,28 @@ bool ONScripter::processText()
         current_page->add(')');
         string_buffer_offset++;
         ruby_struct.stage = RubyStruct::NONE;
+        return true;
+    }
+    else if ( ch == '<' && 
+              (!english_mode ||
+               !(script_h.getEndStatus() & ScriptHandler::END_1BYTE_CHAR)) ){
+        current_page->add('<');
+        string_buffer_offset++;
+        int no = 0;
+        while(script_h.getStringBuffer()[string_buffer_offset]>='0' &&
+              script_h.getStringBuffer()[string_buffer_offset]<='9'){
+            current_page->add(script_h.getStringBuffer()[string_buffer_offset]);
+            no=no*10+script_h.getStringBuffer()[string_buffer_offset++]-'0';
+        }
+        in_textbtn_flag = true;
+        return true;
+    }
+    else if ( ch == '>' && in_textbtn_flag &&
+              (!english_mode ||
+               !(script_h.getEndStatus() & ScriptHandler::END_1BYTE_CHAR)) ){
+        current_page->add('>');
+        string_buffer_offset++;
+        in_textbtn_flag = false;
         return true;
     }
     else{

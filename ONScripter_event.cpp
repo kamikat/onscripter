@@ -845,6 +845,7 @@ bool ONScripter::keyPressEvent( SDL_KeyboardEvent *event )
          ( autoclick_time == 0 || (event_mode & WAIT_BUTTON_MODE)) ){
         if ( !useescspc_flag && event->keysym.sym == SDLK_ESCAPE){
             current_button_state.button  = -1;
+            sprintf(current_button_state.str, "RCLICK");
             if (rmode_flag && event_mode & WAIT_TEXT_MODE){
                 if (root_rmenu_link.next)
                     system_menu_mode = SYSTEM_MENU;

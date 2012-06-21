@@ -3048,11 +3048,11 @@ int ONScripter::btnwaitCommand()
     bexec_flag = false;
 
     if ( script_h.isName( "btnwait2" ) ){
-        if (erase_text_window_mode > 0) display_mode = DISPLAY_MODE_NORMAL;
+        leaveTextDisplayMode();
     }
     else if ( script_h.isName( "btnwait" ) ){
         del_flag = true;
-        if (erase_text_window_mode > 0) display_mode = DISPLAY_MODE_NORMAL;
+        leaveTextDisplayMode();
     }
     else if ( script_h.isName( "textbtnwait" ) ){
         textbtn_flag = true;
@@ -3105,8 +3105,6 @@ int ONScripter::btnwaitCommand()
         SDL_Rect check_src_rect = {0, 0, screen_width, screen_height};
         if (is_exbtn_enabled) decodeExbtnControl( exbtn_d_button_link.exbtn_ctl[1], &check_src_rect );
     }
-
-    leaveTextDisplayMode();
 
     if (textbtn_flag && (skip_mode & SKIP_NORMAL || 
                          (skip_mode & SKIP_TO_EOP && (textgosub_clickstr_state & 0x03) == CLICK_WAIT) || 

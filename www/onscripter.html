@@ -18,7 +18,7 @@
 最近あまり時間がとれないため更新が非常に遅くなることがありますがご了承下さい。<br>
 Since: Feb. 6, 2002<br>
 <!--Last updated: Sep. 12, 2010 (サーバ移行)<br>-->
-Last updated: Apr. 14, 2012 (ソース更新)<br>
+Last updated: May 31, 2012 (ソース更新)<br>
 <!--Last updated: May 25, 2010 (バイナリパッケージ追加・修正)<br>-->
 <!--Last updated: Jul. 12, 2009 (Experimental ソース更新)<br>-->
 </div> <!-- header -->
@@ -86,10 +86,10 @@ Last updated: Apr. 14, 2012 (ソース更新)<br>
 
 <table><tr>
 <td>最新版</td>
-<td><a href="onscripter-20120414.tar.gz">onscripter-20120414.tar.gz</a></td>
+<td><a href="onscripter-20120531.tar.gz">onscripter-20120531.tar.gz</a></td>
 </tr><tr>
 <td>旧版</td>
-<td><a href="onscripter-20120405.tar.gz">onscripter-20120405.tar.gz</a></td>
+<td><a href="onscripter-20120527.tar.gz">onscripter-20120527.tar.gz</a></td>
 </tr></table>
 <!--  <li> <a href="onscripter-exp-20090712.tar.gz">onscripter-exp-20090712.tar.gz</a>(実験版, バグ修正)-->
 
@@ -127,7 +127,7 @@ Last updated: Apr. 14, 2012 (ソース更新)<br>
 <tr><td rowspan=2>NetBSD, DragonFly BSD</td><td class="span"><a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/games/onscripter/">pkgsrc</a></td></tr>
 <tr><td><a href="http://www.tunagu.gr.jp/cgi-bin/fswiki/wiki.cgi/isihara?page=pkgsrc-wip-jp%A4%E1%A4%E2">pkgsrc-wip-jpめも</a> (<a href="http://cvs.sourceforge.jp/cgi-bin/viewcvs.cgi/pkgsrc-wip/wip-jp/onscripter/">pkgsrc-wip/wip-jp/onscripter</a>)</td></tr>
 
-<tr><td>OS2/Warp</td><td><a href="http://www.fastwave.gr.jp/diarysrv/sofiya/">猫耳なプログラミング格闘日記</a> (<a href="http://www.os2.jp/modules/search/index.php?query=onscripter&amp;action=results&amp;showcontext=1">package at OS2.jp</a>)</td></tr>
+<tr><td>OS2/Warp</td><td><a href="http://www.os2.jp/modules/search/index.php?query=onscripter&amp;action=results&amp;showcontext=1">package at OS2.jp</a></td></tr>
 
 <tr><td>Playstation3</td><td><a href="http://www.fumi2kick.com/ps3app/"> PS3 Linux で自作ソフトを楽しもう </a></td></tr>
 
@@ -179,12 +179,14 @@ Last updated: Apr. 14, 2012 (ソース更新)<br>
   <li> Unicode で指定された日本語 TTF フォント(ファイル名は default.ttf に)
   <li> libjpeg-6b (<a href="http://www.ijg.org/">Independent JPEG Group</a>)
   <li> bzip2-1.0.5 (<a href="http://sources.redhat.com/bzip2/">bzip2</a>)
-  <li> SDL-1.2.14, SDL_image-1.2.10, SDL_mixer-1.2.8, SDL_ttf-2.0.9, SMPEG-0.4.5 (<a href="http://www.libsdl.org">Simple Directmedia Layer</a>)
+  <li> SDL-1.2.14, SDL_image-1.2.10, SDL_mixer-1.2.8, SDL_ttf-2.0.9 (<a href="http://www.libsdl.org">Simple Directmedia Layer</a>)
   <li> FreeType 2.3.11 (<a href="http://freetype.sourceforge.net/">the Free Type Project</a>)
 </ul>
 
 <h4>推奨</h4>
 <ul>
+  <li> SMPEG-0.4.6<br>
+MPEG1 形式の音楽ファイルを再生する場合には入れてください。MP3 を演奏するには SMPEG か MAD のいずれかが必要です。
   <li> ogg-1.2.0, vorbis-1.3.1 (<a href="http://www.xiph.org/">The Ogg Vorbis CODEC Project</a>)<br>
 Ogg Vorbis 形式の音楽ファイルを再生する場合には入れてください。同梱の Makefile.Linux, Makefile.ArmLinux ではデフォルトで使用するようになっています。整数演算のみを使用した Tremor vorbis を代わりに使うこともできます。
 </ul>
@@ -214,7 +216,7 @@ avi 命令を使ってムービーを再生する場合には入れてください。Linux で動作確認をして
 <div class="sub-content">
 <h3 id="run">実行</h3>
 
-<p><span style="color:red">[必須]</span>まずゲームのアーカイブを一カ所にまとめます。通常は、スクリプト(0.txt もしくは nscript.dat)とアーカイブ(arc.sar もしくは arc.nsa)の２つのファイルがあれば十分なはずです。arc1.nsa 〜 arc9.nsa がある場合は、それも置いてください。またゲームによっては、アーカイブの外に一部の画像ファイルや音楽ファイルを置いていたりします。その場合は、それらのファイルも元と同じように置いてください。一番確実なのは、ディレクトリ毎全てのファイルをコピーしてくることです。</p>
+<p><span style="color:red">[必須]</span>まずゲームのアーカイブを一カ所にまとめます。通常は、スクリプト(0.txt や nscript.dat)とアーカイブ(arc.sar や *.nsa や *.ns2)があれば十分なはずです。アーカイブが複数ある場合は全て置いてください。またゲームによっては、アーカイブの外に一部の画像ファイルや音楽ファイルを置いている場合があります。その場合は、それらのファイルも元と同じように置いてください。ディレクトリ毎全てのファイルをコピーすると確実です。</p>
 
 <p><span style="color:red">[必須]</span>下記の<a href="#truetype-font">TrueType font による文字表示</a>を参考に、日本語 TrueType font を用意し、&quot;default.ttf&quot; という名前で置いてください。</p>
 

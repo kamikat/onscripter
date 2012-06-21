@@ -360,10 +360,6 @@ int ONScripter::openScript()
 
 int ONScripter::init()
 {
-#ifdef USE_LUA
-    lua_handler.init(this, &script_h);
-#endif    
-
     initSDL();
     openAudio();
 
@@ -482,6 +478,9 @@ int ONScripter::init()
     for (i=0 ; i<MAX_PARAM_NUM ; i++) bar_info[i] = prnum_info[i] = NULL;
 
     defineresetCommand();
+#ifdef USE_LUA
+    lua_handler.init(this, &script_h);
+#endif    
     readToken();
 
     if ( sentence_font.openFont( font_file, screen_ratio1, screen_ratio2 ) == NULL ){
@@ -588,6 +587,7 @@ void ONScripter::resetSub()
     indent_offset = 0;
     line_enter_status = 0;
     page_enter_status = 0;
+    in_textbtn_flag = false;
     
     resetSentenceFont();
 
@@ -674,7 +674,7 @@ void ONScripter::flushDirect( SDL_Rect &rect, int refresh_mode )
     SDL_RenderPresent(renderer);
 #else
     SDL_Rect dst_rect = rect, clip_rect = {0, 0, screen_width, screen_height};
-    if (AnimationInfo::doClipping(&dst_rect, &clip_rect)) return;
+    if (AnimationInfo::doClipping(&dst_rect, &clip_rect) || dst_rect.w==0 && dst_rect.h==0) return;
     SDL_BlitSurface( accumulation_surface, &dst_rect, screen_surface, &dst_rect );
     SDL_UpdateRect( screen_surface, dst_rect.x, dst_rect.y, dst_rect.w, dst_rect.h );
 #endif
