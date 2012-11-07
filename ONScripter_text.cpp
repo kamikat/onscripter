@@ -47,6 +47,7 @@ void ONScripter::shiftHalfPixelX(SDL_Surface *surface)
             buf[j-1] = (buf[j]+c)>>1;
             c = buf[j];
         }
+        buf[surface->w-1] = c>>1;
         buf += surface->pitch;
     }
     SDL_UnlockSurface( surface );
@@ -63,6 +64,7 @@ void ONScripter::shiftHalfPixelY(SDL_Surface *surface)
             *(buf-surface->pitch) = (*buf+c)>>1;
             c = *buf;
         }
+        *buf = c>>1;
     }
     SDL_UnlockSurface( surface );
 }

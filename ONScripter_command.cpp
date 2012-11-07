@@ -3386,10 +3386,10 @@ int ONScripter::bltCommand()
         SDL_Rect dst_rect = {dx,dy,dw,dh};
 
 #ifdef USE_SDL_RENDERER
-        dst_rect.dx = dst_rect.dx * screen_device_width / screen_width + (device_width -screen_device_width )/2;
-        dst_rect.dy = dst_rect.dy * screen_device_width / screen_width + (device_height-screen_device_height)/2;
-        dst_rect.dw = dst_rect.dw * screen_device_width / screen_width;
-        dst_rect.dh = dst_rect.dh * screen_device_width / screen_width;
+        dst_rect.x = dst_rect.x * screen_device_width / screen_width + (device_width -screen_device_width )/2;
+        dst_rect.y = dst_rect.y * screen_device_width / screen_width + (device_height-screen_device_height)/2;
+        dst_rect.w = dst_rect.w * screen_device_width / screen_width;
+        dst_rect.h = dst_rect.h * screen_device_width / screen_width;
         SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, btndef_info.image_surface);
         SDL_RenderCopy(renderer, texture, &src_rect, &dst_rect);
         SDL_RenderPresent(renderer);
