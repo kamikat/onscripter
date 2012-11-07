@@ -212,6 +212,7 @@ public:
     int getpageCommand();
     int getmp3volCommand();
     int getmouseposCommand();
+    int getmouseoverCommand();
     int getlogCommand();
     int getinsertCommand();
     int getfunctionCommand();
@@ -297,7 +298,7 @@ protected:
     void keyUpEvent( SDL_KeyboardEvent *event );
     bool keyPressEvent( SDL_KeyboardEvent *event );
     bool mousePressEvent( SDL_MouseButtonEvent *event );
-    void mouseMoveEvent( SDL_MouseMotionEvent *event );
+    bool mouseMoveEvent( SDL_MouseMotionEvent *event );
     void timerEvent(int count=-1);
     void flushEventSub( SDL_Event &event );
     void flushEvent();
@@ -491,6 +492,10 @@ private:
     bool getenter_flag;
     bool getcursor_flag;
     bool spclclk_flag;
+
+    bool getmouseover_flag;
+    int  getmouseover_lower;
+    int  getmouseover_upper;
 
     void resetSentenceFont();
     void deleteButtonLink();

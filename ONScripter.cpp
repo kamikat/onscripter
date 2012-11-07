@@ -1298,6 +1298,7 @@ void ONScripter::disableGetButtonFlag()
     getfunction_flag = false;
     getenter_flag = false;
     getcursor_flag = false;
+    getmouseover_flag = false;
     spclclk_flag = false;
 }
 

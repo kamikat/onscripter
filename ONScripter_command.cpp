@@ -2298,6 +2298,16 @@ int ONScripter::getmouseposCommand()
     return RET_CONTINUE;
 }
 
+int ONScripter::getmouseoverCommand()
+{
+    getmouseover_flag = true;
+
+    getmouseover_lower = script_h.readInt();
+    getmouseover_upper = script_h.readInt();
+    
+    return RET_CONTINUE;
+}
+
 int ONScripter::getlogCommand()
 {
     script_h.readVariable();
