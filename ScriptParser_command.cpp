@@ -371,15 +371,17 @@ int ScriptParser::returnCommand()
         setCurrentLabel( label+1 );
 
     bool textgosub_flag = last_nest_info->textgosub_flag;
+    char *wait_script = last_nest_info->wait_script;
 
     last_nest_info = last_nest_info->previous;
     delete last_nest_info->next;
     last_nest_info->next = NULL;
     
     if (textgosub_flag){
-        string_buffer_offset = script_h.popStringBuffer();
-        if (script_h.getStringBuffer()[string_buffer_offset] != 0)
-            return RET_NO_READ;
+        if (wait_script){
+            script_h.setCurrent(wait_script);
+            return RET_CONTINUE;
+        }
 
         // if this is the end of the line, pretext becomes enabled
         line_enter_status = 0;
@@ -956,8 +958,8 @@ void ScriptParser::gosubReal( const char *label, char *next_script, bool textgos
     pretext_buf = &last_nest_info->next_script;
 
     if (textgosub_flag){
-        script_h.pushStringBuffer(string_buffer_offset);
         last_nest_info->textgosub_flag = true;
+        last_nest_info->wait_script = script_h.getWait();
     }
 
     setCurrentLabel( label );

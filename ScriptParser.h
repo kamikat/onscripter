@@ -188,11 +188,13 @@ protected:
         char *next_script; // used in gosub and for
         int  var_no, to, step; // used in for
         bool textgosub_flag; // used in textgosub and pretextgosub
+        char *wait_script; // used in gosub with textgosub
 
         NestInfo(){
             previous = next = NULL;
             nest_mode = LABEL;
             textgosub_flag = false;
+            wait_script = NULL;
         };
     } last_tilde;
 

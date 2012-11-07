@@ -118,12 +118,11 @@ public:
     inline char *getStringBuffer(){ return string_buffer; };
     char *saveStringBuffer();
     void addStringBuffer( char ch );
-    void pushStringBuffer(int offset); // used in textgosub and pretextgosub
-    int  popStringBuffer(); // used in textgosub and pretextgosub
     
     // function for direct manipulation of script address 
     inline char *getCurrent(){ return current_script; };
     inline char *getNext(){ return next_script; };
+    inline char *getWait(){ return wait_script; };
     void setCurrent(char *pos);
     void pushCurrent( char *pos );
     void popCurrent();
@@ -318,8 +317,6 @@ private:
     int  string_counter;
     char *saved_string_buffer; // updated only by saveStringBuffer
     char *str_string_buffer; // updated only by readStr
-    char *gosub_string_buffer; // used in textgosub and pretextgosub
-    int gosub_string_offset; // used in textgosub and pretextgosub
 
     LabelInfo *label_info;
     int num_of_labels;
@@ -337,6 +334,7 @@ private:
 
     char *current_script;
     char *next_script;
+    char *wait_script; // address where '@' or '//' appears
 
     char *pushed_current_script;
     char *pushed_next_script;

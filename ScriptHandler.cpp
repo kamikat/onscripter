@@ -40,7 +40,6 @@ ScriptHandler::ScriptHandler()
     string_buffer       = new char[STRING_BUFFER_LENGTH];
     str_string_buffer   = new char[STRING_BUFFER_LENGTH];
     saved_string_buffer = new char[STRING_BUFFER_LENGTH];
-    gosub_string_buffer = new char[STRING_BUFFER_LENGTH];
 
     variable_data = NULL;
     extended_variable_data = NULL;
@@ -64,7 +63,6 @@ ScriptHandler::~ScriptHandler()
     delete[] string_buffer;
     delete[] str_string_buffer;
     delete[] saved_string_buffer;
-    delete[] gosub_string_buffer;
     if (variable_data) delete[] variable_data;
 }
 
@@ -154,6 +152,7 @@ void ScriptHandler::setKeyTable( const unsigned char *key_table )
 const char *ScriptHandler::readToken()
 {
     current_script = next_script;
+    wait_script = NULL;
     char *buf = current_script;
     end_status = END_NONE;
     current_variable.type = VAR_NONE;
@@ -204,6 +203,7 @@ const char *ScriptHandler::readToken()
                     if (ch == 0x0a || ch == '\0') break;
                     addStringBuffer( ch );
                     buf++;
+                    if (!wait_script && ch == '@') wait_script = buf;
                 }
             }
             ch = *buf;
@@ -891,19 +891,6 @@ void ScriptHandler::addStringBuffer( char ch )
         errorAndExit("addStringBuffer: string length exceeds 2048.");
     string_buffer[string_counter++] = ch;
     string_buffer[string_counter] = '\0';
-}
-
-void ScriptHandler::pushStringBuffer(int offset)
-{
-    strcpy(gosub_string_buffer, string_buffer);
-    gosub_string_offset = offset;
-}
-
-int ScriptHandler::popStringBuffer()
-{
-    strcpy(string_buffer, gosub_string_buffer);
-    text_flag = true;
-    return gosub_string_offset;
 }
 
 ScriptHandler::VariableData &ScriptHandler::getVariableData(int no)
