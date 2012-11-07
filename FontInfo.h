@@ -33,7 +33,7 @@ public:
     enum { YOKO_MODE = 0,
            TATE_MODE = 1
     };
-    void *ttf_font;
+    void *ttf_font[2]; // 0...normal rendering, 1...outline rendering
     uchar3 color;
     uchar3 on_color, off_color, nofile_color;
     int font_size_xy[2];
@@ -74,7 +74,7 @@ public:
     void setRubyOnFlag(bool flag);
 
     SDL_Rect calcUpdatedArea(int start_xy[2], int ratio1, int ratio2);
-    void addShadeArea(SDL_Rect &rect, int shade_distance[2] );
+    void addShadeArea(SDL_Rect &rect, int dx, int dy, int dw=0, int dh=0);
     int initRuby(FontInfo &body_info, int body_count, int ruby_count);
 };
 

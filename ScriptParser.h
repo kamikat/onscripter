@@ -332,6 +332,7 @@ protected:
     
     /* ---------------------------------------- */
     /* Text related variables */
+    bool render_font_outline;
     char *default_env_font;
     int default_text_speed[3];
     struct Page{

@@ -594,7 +594,8 @@ int ONScripter::sevolCommand()
 
 void ONScripter::setwindowCore()
 {
-    sentence_font.ttf_font  = NULL;
+    sentence_font.ttf_font[0] = NULL;
+    sentence_font.ttf_font[1] = NULL;
     sentence_font.top_xy[0] = script_h.readInt();
     sentence_font.top_xy[1] = script_h.readInt();
     sentence_font.num_xy[0] = script_h.readInt();
@@ -2927,7 +2928,8 @@ int ONScripter::cselbtnCommand()
     button->no          = button_no;
     button->sprite_no   = csel_no;
 
-    sentence_font.ttf_font = csel_info.ttf_font;
+    sentence_font.ttf_font[0] = csel_info.ttf_font[0];
+    sentence_font.ttf_font[1] = csel_info.ttf_font[1];
 
     return RET_CONTINUE;
 }

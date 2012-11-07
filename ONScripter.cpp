@@ -249,13 +249,6 @@ ONScripter::ONScripter()
     int i;
     for (i=0 ; i<MAX_SPRITE2_NUM ; i++)
         sprite2_info[i].affine_flag = true;
-    for (i=0 ; i<NUM_GLYPH_CACHE ; i++){
-        if (i != NUM_GLYPH_CACHE-1) glyph_cache[i].next = &glyph_cache[i+1];
-        glyph_cache[i].font = NULL;
-        glyph_cache[i].surface = NULL;
-    }
-    glyph_cache[NUM_GLYPH_CACHE-1].next = NULL;
-    root_glyph_cache = &glyph_cache[0];
 
     // External Players
 #if defined(WINCE)
@@ -329,6 +322,15 @@ void ONScripter::enableWheelDownAdvance()
 void ONScripter::disableRescale()
 {
     disable_rescale_flag = true;
+}
+
+void ONScripter::renderFontOutline()
+{
+#if (SDL_TTF_MAJOR_VERSION>=2) && (SDL_TTF_MINOR_VERSION>=0) && (SDL_TTF_PATCHLEVEL>=10)
+    render_font_outline = true;
+#else
+    fprintf(stderr, "--render-font-outline is not supported with SDL_ttf %d.%d.%d\n", SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, SDL_TTF_PATCHLEVEL);
+#endif
 }
 
 void ONScripter::enableEdit()

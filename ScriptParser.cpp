@@ -63,6 +63,7 @@ ScriptParser::ScriptParser()
     file_io_buf_len = 0;
     save_data_len = 0;
 
+    render_font_outline = false;
     page_list = NULL;
 
     /* ---------------------------------------- */

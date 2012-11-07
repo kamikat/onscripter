@@ -90,6 +90,7 @@ void optionHelp()
     printf( "      --force-button-shortcut\tignore useescspc and getenter command\n");
     printf( "      --enable-wheeldown-advance\tadvance the text on mouse wheel down\n");
     printf( "      --disable-rescale\tdo not rescale the images in the archives\n");
+    printf( "      --render-font-outline\trender outline of a font instead of casting shadow\n");
     printf( "      --edit\t\tenable online modification of the volume and variables when 'z' is pressed\n");
     printf( "      --key-exe file\tspecify a file (*.EXE) that includes a key table\n");
     printf( "  -h, --help\t\tshow this help and exit\n");
@@ -160,6 +161,7 @@ int main( int argc, char **argv )
     ons.enableButtonShortCut();
 #elif defined(ANDROID) 
     ons.enableButtonShortCut();
+    ons.renderFontOutline();
 #endif
 
 #if defined(IOS)
@@ -181,7 +183,7 @@ int main( int argc, char **argv )
     strcpy(filename, [[[[ScriptSelector alloc] initWithStyle:UITableViewStylePlain] select] UTF8String]);
     ons.setArchivePath(filename);
 #endif
-
+    ons.renderFontOutline();
 #endif
 
     // ----------------------------------------
@@ -237,6 +239,9 @@ int main( int argc, char **argv )
             }
             else if ( !strcmp( argv[0]+1, "-disable-rescale" ) ){
                 ons.disableRescale();
+            }
+            else if ( !strcmp( argv[0]+1, "-render-font-outline" ) ){
+                ons.renderFontOutline();
             }
             else if ( !strcmp( argv[0]+1, "-edit" ) ){
                 ons.enableEdit();

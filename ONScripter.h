@@ -52,8 +52,6 @@
 #define DEFAULT_WM_TITLE "ONScripter"
 #define DEFAULT_WM_ICON  "ONScripter"
 
-#define NUM_GLYPH_CACHE 30
-
 class ONScripter : public ScriptParser
 {
 public:
@@ -75,6 +73,7 @@ public:
     void enableButtonShortCut();
     void enableWheelDownAdvance();
     void disableRescale();
+    void renderFontOutline();
     void enableEdit();
     void setKeyEXE(const char *path);
     int  getWidth(){ return screen_width;};
@@ -552,17 +551,10 @@ private:
     bool draw_cursor_flag;
     int  textgosub_clickstr_state;
     int  indent_offset;
-    struct GlyphCache{
-        GlyphCache *next;
-        Uint16 text;
-        TTF_Font *font;
-        SDL_Surface *surface;
-    } *root_glyph_cache, glyph_cache[NUM_GLYPH_CACHE];
 
     int refreshMode();
     void setwindowCore();
     
-    SDL_Surface *renderGlyph(TTF_Font *font, Uint16 text);
     void drawGlyph( SDL_Surface *dst_surface, FontInfo *info, SDL_Color &color, char *text, int xy[2], bool shadow_flag, AnimationInfo *cache_info, SDL_Rect *clip, SDL_Rect &dst_rect );
     void drawChar( char* text, FontInfo *info, bool flush_flag, bool lookback_flag, SDL_Surface *surface, AnimationInfo *cache_info, SDL_Rect *clip=NULL );
     void drawString( const char *str, uchar3 color, FontInfo *info, bool flush_flag, SDL_Surface *surface, SDL_Rect *rect = NULL, AnimationInfo *cache_info=NULL );
@@ -701,7 +693,6 @@ private:
     
     /* ---------------------------------------- */
     /* Text event related variables */
-    TTF_Font *text_font;
     bool new_line_skip_flag;
     int text_speed_no;
     int num_fingers; // numbur of fingers touching on the screen
