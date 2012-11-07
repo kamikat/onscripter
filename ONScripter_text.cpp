@@ -159,6 +159,11 @@ void ONScripter::drawGlyph( SDL_Surface *dst_surface, FontInfo *info, SDL_Color 
         if (dst_surface)
             alphaBlendText( dst_surface, dst_rect, tmp_surface, color, clip, rotate_flag );
     }
+
+    if (tmp_surface_s && tmp_surface_s != tmp_surface)
+        SDL_FreeSurface(tmp_surface_s);
+    if (tmp_surface)
+        SDL_FreeSurface(tmp_surface);
 }
 
 void ONScripter::drawChar( char* text, FontInfo *info, bool flush_flag, bool lookback_flag, SDL_Surface *surface, AnimationInfo *cache_info, SDL_Rect *clip )
