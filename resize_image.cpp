@@ -2,7 +2,7 @@
  * 
  *  resize_image.cpp - resize image using smoothing and resampling
  *
- *  Copyright (c) 2001-2010 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -163,12 +163,14 @@ void resizeImage( unsigned char *dst_buffer, int dst_width, int dst_height, int 
     
     /* resampling */
     unsigned char *dst_buf = dst_buffer;
+    int dh1 = dst_height-1; if (dh1==0) dh1 = 1;
+    int dw1 = dst_width-1;  if (dw1==0) dw1 = 1;
     for ( i=0 ; i<dst_height ; i++ ){
-        int y = (i<<3) * src_height / dst_height;
+        int y = (i<<3) * (src_height-1) / dh1;
         int dy = y & 0x7;
         y >>= 3;
         for ( j=0 ; j<dst_width ; j++ ){
-            int x = (j<<3) * src_width  / dst_width;
+            int x = (j<<3) * (src_width-1) / dw1;
             int dx = x & 0x7;
             x >>= 3;
 

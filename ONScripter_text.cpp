@@ -296,7 +296,7 @@ void ONScripter::drawString( const char *str, uchar3 color, FontInfo *info, bool
 
     /* ---------------------------------------- */
     /* Calculate the area of selection */
-    SDL_Rect clipped_rect = info->calcUpdatedArea(start_xy);
+    SDL_Rect clipped_rect = info->calcUpdatedArea(start_xy, screen_ratio1, screen_ratio2);
 
     SDL_Rect scaled_clipped_rect;
     scaled_clipped_rect.x = clipped_rect.x * screen_ratio1 / screen_ratio2;

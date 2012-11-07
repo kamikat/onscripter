@@ -73,7 +73,7 @@ public:
     void addLineOffset(int margin);
     void setRubyOnFlag(bool flag);
 
-    SDL_Rect calcUpdatedArea(int start_xy[2]);
+    SDL_Rect calcUpdatedArea(int start_xy[2], int ratio1, int ratio2);
     void addShadeArea(SDL_Rect &rect, int shade_distance[2] );
     int initRuby(FontInfo &body_info, int body_count, int ruby_count);
 };

@@ -212,7 +212,7 @@ void FontInfo::addLineOffset(int offset)
     line_offset_xy[tateyoko_mode] += offset;
 }
 
-SDL_Rect FontInfo::calcUpdatedArea(int start_xy[2])
+SDL_Rect FontInfo::calcUpdatedArea(int start_xy[2], int ratio1, int ratio2)
 {
     SDL_Rect rect;
     
@@ -227,7 +227,7 @@ SDL_Rect FontInfo::calcUpdatedArea(int start_xy[2])
         }
         rect.y = top_xy[1] + start_xy[1]*pitch_xy[1]/2;
         rect.h = pitch_xy[1]*(xy[1]-start_xy[1]+2)/2;
-        if (ttf_font) rect.h += font_size_xy[1] - TTF_FontAscent((TTF_Font*)ttf_font);
+        if (ttf_font) rect.h += font_size_xy[1] - TTF_FontAscent((TTF_Font*)ttf_font)*ratio2/ratio1;
         if (rubyon_flag) rect.h += pitch_xy[1] - font_size_xy[1];
     }
     else{
