@@ -161,7 +161,6 @@ int main( int argc, char **argv )
     ons.enableButtonShortCut();
 #elif defined(ANDROID) 
     ons.enableButtonShortCut();
-    ons.renderFontOutline();
 #endif
 
 #if defined(IOS)
@@ -183,7 +182,9 @@ int main( int argc, char **argv )
     strcpy(filename, [[[[ScriptSelector alloc] initWithStyle:UITableViewStylePlain] select] UTF8String]);
     ons.setArchivePath(filename);
 #endif
+#if defined(RENDER_FONT_OUTLINE)
     ons.renderFontOutline();
+#endif
 #endif
 
     // ----------------------------------------

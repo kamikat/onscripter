@@ -37,6 +37,36 @@ extern unsigned short convSJIS2UTF16( unsigned short in );
 #define IS_TRANSLATION_REQUIRED(x)	\
         ( *(x) == (char)0x81 && *((x)+1) >= 0x41 && *((x)+1) <= 0x44 )
 
+void ONScripter::shiftHalfPixelX(SDL_Surface *surface)
+{
+    SDL_LockSurface( surface );
+    unsigned char *buf = (unsigned char*)surface->pixels;
+    for (int i=surface->h ; i!=0 ; --i){
+        unsigned char c = buf[0];
+        for (int j=1 ; j<surface->w ; ++j){
+            buf[j-1] = (buf[j]+c)>>1;
+            c = buf[j];
+        }
+        buf += surface->pitch;
+    }
+    SDL_UnlockSurface( surface );
+}
+
+void ONScripter::shiftHalfPixelY(SDL_Surface *surface)
+{
+    SDL_LockSurface( surface );
+    for (int j=surface->w ; j!=0 ; --j){
+        unsigned char *buf = (unsigned char*)surface->pixels + j;
+        unsigned char c = buf[0];
+        for (int i=1 ; i<surface->h ; ++i){
+            buf += surface->pitch;
+            *(buf-surface->pitch) = (*buf+c)>>1;
+            c = *buf;
+        }
+    }
+    SDL_UnlockSurface( surface );
+}
+
 void ONScripter::drawGlyph( SDL_Surface *dst_surface, FontInfo *info, SDL_Color &color, char* text, int xy[2], bool shadow_flag, AnimationInfo *cache_info, SDL_Rect *clip, SDL_Rect &dst_rect )
 {
     unsigned short unicode;
@@ -64,8 +94,13 @@ void ONScripter::drawGlyph( SDL_Surface *dst_surface, FontInfo *info, SDL_Color 
     SDL_Surface *tmp_surface = TTF_RenderGlyph_Shaded((TTF_Font*)info->ttf_font[0], unicode, fcol, bcol);
     
     SDL_Surface *tmp_surface_s = tmp_surface;
-    if (shadow_flag && render_font_outline)
+    if (shadow_flag && render_font_outline){
         tmp_surface_s = TTF_RenderGlyph_Shaded((TTF_Font*)info->ttf_font[1], unicode, fcol, bcol);
+        if (tmp_surface && tmp_surface_s){
+            if ((tmp_surface_s->w-tmp_surface->w) & 1) shiftHalfPixelX(tmp_surface_s);
+            if ((tmp_surface_s->h-tmp_surface->h) & 1) shiftHalfPixelY(tmp_surface_s);
+        }
+    }
 
     bool rotate_flag = false;
     if ( info->getTateyokoMode() == FontInfo::TATE_MODE && IS_ROTATION_REQUIRED(text) ) rotate_flag = true;

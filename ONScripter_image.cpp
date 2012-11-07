@@ -346,7 +346,7 @@ void ONScripter::alphaBlend( SDL_Surface *mask_surface,
 // dst: ONSBuf surface (accumulation_surface)
 // src: 8bit surface (TTF_RenderGlyph_Shaded())
 void ONScripter::alphaBlendText( SDL_Surface *dst_surface, SDL_Rect dst_rect,
-                                      SDL_Surface *src_surface, SDL_Color &color, SDL_Rect *clip, bool rotate_flag )
+                                 SDL_Surface *src_surface, SDL_Color &color, SDL_Rect *clip, bool rotate_flag )
 {
     int x2=0, y2=0;
     SDL_Rect clipped_rect;
