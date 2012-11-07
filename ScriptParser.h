@@ -435,7 +435,6 @@ protected:
         };
     } ruby_struct;
     int shade_distance[2];
-    int old_xy[2];
 
     /* ---------------------------------------- */
     /* RMenu related variables */

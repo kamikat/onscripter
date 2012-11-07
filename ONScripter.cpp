@@ -636,8 +636,8 @@ void ONScripter::resetSentenceFont()
     sentence_font_info.scalePosXY( screen_ratio1, screen_ratio2 );
     sentence_font_info.scalePosWH( screen_ratio1, screen_ratio2 );
 
-    old_xy[0] = sentence_font.x();
-    old_xy[1] = sentence_font.y();
+    sentence_font.old_xy[0] = sentence_font.x();
+    sentence_font.old_xy[1] = sentence_font.y();
 }
 
 void ONScripter::flush( int refresh_mode, SDL_Rect *rect, bool clear_dirty_flag, bool direct_flag )

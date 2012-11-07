@@ -40,6 +40,7 @@ public:
     int top_xy[2]; // Top left origin
     int num_xy[2]; // Row and column of the text windows
     int xy[2]; // Current position
+    int old_xy[2];
     int pitch_xy[2]; // Width and height of a character
     int wait_time;
     bool is_bold;

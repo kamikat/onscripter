@@ -635,8 +635,8 @@ void ONScripter::setwindowCore()
         sentence_font.window_color[0] = sentence_font.window_color[1] = sentence_font.window_color[2] = 0xff;
     }
 
-    old_xy[0] = sentence_font.x();
-    old_xy[1] = sentence_font.y();
+    sentence_font.old_xy[0] = sentence_font.x();
+    sentence_font.old_xy[1] = sentence_font.y();
 }
 
 int ONScripter::setwindow3Command()
@@ -2354,10 +2354,10 @@ int ONScripter::getenterCommand()
 int ONScripter::getcursorpos2Command()
 {
     script_h.readInt();
-    script_h.setInt( &script_h.current_variable, old_xy[0] );
+    script_h.setInt( &script_h.current_variable, sentence_font.old_xy[0] );
     
     script_h.readInt();
-    script_h.setInt( &script_h.current_variable, old_xy[1] );
+    script_h.setInt( &script_h.current_variable, sentence_font.old_xy[1] );
     
     return RET_CONTINUE;
 }

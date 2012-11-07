@@ -159,8 +159,8 @@ void ONScripter::drawChar( char* text, FontInfo *info, bool flush_flag, bool loo
         }
     }
 
-    old_xy[0] = info->x();
-    old_xy[1] = info->y();
+    info->old_xy[0] = info->x();
+    info->old_xy[1] = info->y();
 
     char text2[2] = {text[0], 0};
     if (IS_TWO_BYTE(text[0])) text2[1] = text[1];
@@ -379,7 +379,7 @@ void ONScripter::restoreTextBuffer(SDL_Surface *surface)
 
 void ONScripter::enterTextDisplayMode(bool text_flag)
 {
-    if (line_enter_status <= 1 && saveon_flag && internal_saveon_flag && text_flag){
+    if (line_enter_status <= 1 && (!pretextgosub_label || saveon_flag) && internal_saveon_flag && text_flag){
         saveSaveFile( -1 );
         internal_saveon_flag = false;
     }
@@ -608,7 +608,7 @@ void ONScripter::endRuby(bool flush_flag, bool lookback_flag, SDL_Surface *surfa
 
 int ONScripter::textCommand()
 {
-    if (line_enter_status <= 1 && saveon_flag && internal_saveon_flag){
+    if (line_enter_status <= 1 && (!pretextgosub_label || saveon_flag) && internal_saveon_flag){
         saveSaveFile( -1 );
         internal_saveon_flag = false;
     }
@@ -661,6 +661,7 @@ int ONScripter::textCommand()
             current_page->tag = NULL;
         }
 
+        saveon_flag = false;
         gosubReal( pretextgosub_label, script_h.getCurrent() );
         line_enter_status = 1;
 
@@ -714,8 +715,6 @@ bool ONScripter::checkLineBreak(const char *buf, FontInfo *fi)
 
 void ONScripter::processEOT()
 {
-    int i, n;
-    
     if ( skip_mode & SKIP_TO_EOL ){
         flush( refreshMode() );
         skip_mode &= ~SKIP_TO_EOL;
@@ -723,18 +722,7 @@ void ONScripter::processEOT()
 
     if (!sentence_font.isLineEmpty() && !new_line_skip_flag){
         // if sentence_font.isLineEmpty() is true, newPage() might be already issued
-        if (page_enter_status == 1){
-            n = sentence_font.num_xy[0] - sentence_font.xy[0]/2;
-            for (i=0 ; i<n ; i++){
-                current_page->add(0x81);
-                current_page->add(0x40);
-                sentence_font.advanceCharInHankaku(2);
-            }
-        }
-        else{
-            if (!sentence_font.isEndOfLine()) current_page->add( 0x0a );
-        }
-
+        if (!sentence_font.isEndOfLine()) current_page->add( 0x0a );
         sentence_font.newLine();
     }
 
