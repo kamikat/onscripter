@@ -35,14 +35,47 @@ extern "C" Uint32 SDLCALL bgmfadeCallback( Uint32 interval, void *param );
 
 int ONScripter::yesnoboxCommand()
 {
+    bool yesno_flag = true;
+    if ( script_h.isName( "okcancelbox" ) ) yesno_flag = false;
+
     script_h.readInt();
-    int no = script_h.current_variable.var_no;
-    script_h.setInt( &script_h.current_variable, 1 );
+    script_h.pushVariable();
 
     script_h.readStr();
-    script_h.readStr();
+    const char *mes1 = script_h.saveStringBuffer();
+    const char *mes2 = script_h.readStr();
+    SDL_Rect button_rect[2];
+    buildDialog(yesno_flag, mes1, mes2, button_rect);
     
-    printf( "*** yesnoboxCommand(): %%%d is set to 1\n", no);
+    show_dialog_flag = true;
+    dirty_rect.add(dialog_info.pos);
+    flush(refreshMode());
+
+    while(1){
+        event_mode = WAIT_BUTTON_MODE;
+        waitEvent(-1);
+
+        if (current_button_state.button == -1){
+            script_h.setInt(&script_h.pushed_variable, 0);
+            break;
+        }
+
+        int i=0;
+        for (; i<2 ; i++){
+            if (current_button_state.x >= button_rect[i].x &&
+                current_button_state.x <  button_rect[i].x+button_rect[i].w &&
+                current_button_state.y >= button_rect[i].y &&
+                current_button_state.y <  button_rect[i].y+button_rect[i].h){
+                script_h.setInt(&script_h.pushed_variable, 1-i);
+                break;
+            }
+        }
+        if (i<2) break;
+    }
+    
+    show_dialog_flag = false;
+    dirty_rect.add(dialog_info.pos);
+    flush(refreshMode());
 
     return RET_CONTINUE;
 }

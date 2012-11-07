@@ -612,6 +612,7 @@ void ONScripter::resetSub()
     barclearCommand();
     prnumclearCommand();
     for (i=0 ; i<2 ; i++) cursor_info[i].reset();
+    show_dialog_flag = false;
     for (i=0 ; i<4 ; i++) lookback_info[i].reset();
     sentence_font_info.reset();
 

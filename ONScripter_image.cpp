@@ -552,6 +552,10 @@ void ONScripter::refreshSurface( SDL_Surface *surface, SDL_Rect *clip_src, int r
             drawTaggedSurface( surface, bl->anim[bl->show_flag-1], clip );
         bl = bl->next;
     }
+
+    if (show_dialog_flag){
+        drawTaggedSurface( surface, &dialog_info, clip );
+    }
 }
 
 void ONScripter::refreshSprite( int sprite_no, bool active_flag, int cell_no,

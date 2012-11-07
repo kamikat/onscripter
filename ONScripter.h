@@ -156,6 +156,7 @@ public:
     int playstopCommand();
     int playonceCommand();
     int playCommand();
+    int okcancelboxCommand();
     int ofscopyCommand();
     int negaCommand();
     int mspCommand();
@@ -537,6 +538,11 @@ private:
     void saveEnvData();
     
     /* ---------------------------------------- */
+    /* Dialog related variables */
+    bool show_dialog_flag;
+    AnimationInfo dialog_info;
+
+    /* ---------------------------------------- */
     /* Lookback related variables */
     AnimationInfo lookback_info[4];
     
@@ -778,6 +784,7 @@ private:
     bool executeSystemYesNo( int caller, int file_no=0 );
     void setupLookbackButton();
     void executeSystemLookback();
+    void buildDialog(bool yesno_flag, const char *mes1, const char *mes2, SDL_Rect button_rect[2]);
 };
 
 #endif // __ONSCRIPTER_LABEL_H__

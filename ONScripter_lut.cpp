@@ -134,6 +134,7 @@ static ONScripter::FuncLUT func_lut[] = {
     {"play",			&ONScripter::playCommand},
     {"pagetag",			&ONScripter::pagetagCommand},
 
+    {"okcancelbox",		&ONScripter::yesnoboxCommand},
     {"ofscpy",			&ONScripter::ofscopyCommand},
     {"ofscopy",			&ONScripter::ofscopyCommand},
 

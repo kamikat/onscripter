@@ -44,6 +44,7 @@
 #endif
 
 #define DEFAULT_FONT_SIZE 26
+#define DEFAULT_DIALOG_FONT_SIZE 18
 
 #define DEFAULT_LOOKBACK_NAME0 "uoncur.bmp"
 #define DEFAULT_LOOKBACK_NAME1 "uoffcur.bmp"
@@ -412,7 +413,7 @@ protected:
      
     /* ---------------------------------------- */
     /* Font related variables */
-    FontInfo *current_font, sentence_font, menu_font, ruby_font;
+    FontInfo *current_font, sentence_font, menu_font, ruby_font, dialog_font;
     struct RubyStruct{
         enum { NONE,
                BODY,
