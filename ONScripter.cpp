@@ -251,13 +251,6 @@ ONScripter::ONScripter()
     int i;
     for (i=0 ; i<MAX_SPRITE2_NUM ; i++)
         sprite2_info[i].affine_flag = true;
-    for (i=0 ; i<NUM_GLYPH_CACHE ; i++){
-        if (i != NUM_GLYPH_CACHE-1) glyph_cache[i].next = &glyph_cache[i+1];
-        glyph_cache[i].font = NULL;
-        glyph_cache[i].surface = NULL;
-    }
-    glyph_cache[NUM_GLYPH_CACHE-1].next = NULL;
-    root_glyph_cache = &glyph_cache[0];
 
     // External Players
 #if defined(WINCE)
@@ -331,6 +324,15 @@ void ONScripter::enableWheelDownAdvance()
 void ONScripter::disableRescale()
 {
     disable_rescale_flag = true;
+}
+
+void ONScripter::renderFontOutline()
+{
+#if (SDL_TTF_MAJOR_VERSION>=2) && (SDL_TTF_MINOR_VERSION>=0) && (SDL_TTF_PATCHLEVEL>=10)
+    render_font_outline = true;
+#else
+    fprintf(stderr, "--render-font-outline is not supported with SDL_ttf %d.%d.%d\n", SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, SDL_TTF_PATCHLEVEL);
+#endif
 }
 
 void ONScripter::enableEdit()
@@ -612,6 +614,7 @@ void ONScripter::resetSub()
     barclearCommand();
     prnumclearCommand();
     for (i=0 ; i<2 ; i++) cursor_info[i].reset();
+    show_dialog_flag = false;
     for (i=0 ; i<4 ; i++) lookback_info[i].reset();
     sentence_font_info.reset();
 
@@ -638,8 +641,8 @@ void ONScripter::resetSentenceFont()
     sentence_font_info.scalePosXY( screen_ratio1, screen_ratio2 );
     sentence_font_info.scalePosWH( screen_ratio1, screen_ratio2 );
 
-    old_xy[0] = sentence_font.x();
-    old_xy[1] = sentence_font.y();
+    sentence_font.old_xy[0] = sentence_font.x();
+    sentence_font.old_xy[1] = sentence_font.y();
 }
 
 void ONScripter::flush( int refresh_mode, SDL_Rect *rect, bool clear_dirty_flag, bool direct_flag )
@@ -1300,6 +1303,7 @@ void ONScripter::disableGetButtonFlag()
     getfunction_flag = false;
     getenter_flag = false;
     getcursor_flag = false;
+    getmouseover_flag = false;
     spclclk_flag = false;
 }
 

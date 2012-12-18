@@ -23,6 +23,13 @@
 
 #include "ONScripter.h"
 
+#define DIALOG_W 241
+#define DIALOG_H 167
+#define DIALOG_HEADER 32
+#define DIALOG_FOOTER 64
+#define DIALOG_BUTTON_W 96
+#define DIALOG_BUTTON_H 42
+
 #if defined(ENABLE_1BYTE_CHAR) && defined(FORCE_1BYTE_CHAR)
 #define MESSAGE_SAVE_EXIST "`%s%s    Date %s/%s    Time %s:%s"
 #define MESSAGE_SAVE_EMPTY "`%s%s    ------------------------"
@@ -32,6 +39,8 @@
 #define MESSAGE_END_CONFIRM "`Quit?"
 #define MESSAGE_YES "Yes"
 #define MESSAGE_NO "No"
+#define MESSAGE_OK "OK"
+#define MESSAGE_CANCEL "Cancel"
 #else
 #define MESSAGE_SAVE_EXIST "%s%s　%s月%s日%s时%s分"
 #define MESSAGE_SAVE_EMPTY "%s%s　－－－－－－－－－－－－"
@@ -41,6 +50,8 @@
 #define MESSAGE_END_CONFIRM "结束游戏。确认？"
 #define MESSAGE_YES "是"
 #define MESSAGE_NO "否"
+#define MESSAGE_OK "确定"
+#define MESSAGE_CANCEL "取消"
 #endif
 
 void ONScripter::enterSystemCall()
@@ -633,5 +644,107 @@ void ONScripter::executeSystemLookback()
         }
         else
             current_page = current_page->next;
+    }
+}
+
+void ONScripter::buildDialog(bool yesno_flag, const char *mes1, const char *mes2, SDL_Rect button_rect[2])
+{
+    SDL_PixelFormat *fmt = image_surface->format;
+    SDL_Surface *s = SDL_CreateRGBSurface( SDL_SWSURFACE, DIALOG_W, DIALOG_H,
+                                           fmt->BitsPerPixel, fmt->Rmask, fmt->Gmask, fmt->Bmask, fmt->Amask );
+    SDL_Surface *s2 = SDL_CreateRGBSurface( SDL_SWSURFACE, DIALOG_W*screen_ratio1/screen_ratio2, DIALOG_H*screen_ratio1/screen_ratio2,
+                                           fmt->BitsPerPixel, fmt->Rmask, fmt->Gmask, fmt->Bmask, fmt->Amask );
+
+    SDL_Rect rect;
+    unsigned char col = 255;
+    SDL_FillRect(s, NULL, SDL_MapRGBA(s->format, col, col, col, 0xff));
+
+    rect.x = 2; rect.y = DIALOG_HEADER;
+    rect.w = DIALOG_W-4; rect.h = DIALOG_H-rect.y-2;
+    col = 105;
+    SDL_FillRect(s, &rect, SDL_MapRGBA(s->format, col, col, col, 0xff));
+    
+    rect.x++; rect.y++; rect.w-=2; rect.h-=2;
+    col = 255;
+    SDL_FillRect(s, &rect, SDL_MapRGBA(s->format, col, col, col, 0xff));
+
+    rect.h = DIALOG_FOOTER;
+    rect.y = DIALOG_H-3-rect.h;
+    col = 240;
+    SDL_FillRect(s, &rect, SDL_MapRGBA(s->format, col, col, col, 0xff));
+
+    const char* mes[2];
+    if (yesno_flag){
+        mes[0] = MESSAGE_YES;
+        mes[1] = MESSAGE_NO;
+    }
+    else{
+        mes[0] = MESSAGE_OK;
+        mes[1] = MESSAGE_CANCEL;
+    }
+    for (int i=0 ; i<2 ; i++){
+        rect.x = DIALOG_W-3-(DIALOG_BUTTON_W+8)*(2-i);
+        rect.y = DIALOG_H-3-(DIALOG_FOOTER+DIALOG_BUTTON_H)/2;
+        rect.w = DIALOG_BUTTON_W; rect.h = DIALOG_BUTTON_H;
+
+        button_rect[i].x = rect.x*screen_ratio1/screen_ratio2;
+        button_rect[i].y = rect.y*screen_ratio1/screen_ratio2;
+        button_rect[i].w = rect.w*screen_ratio1/screen_ratio2;
+        button_rect[i].h = rect.h*screen_ratio1/screen_ratio2;
+
+        col = 105;
+        SDL_FillRect(s, &rect, SDL_MapRGBA(s->format, col, col, col, 0xff));
+
+        rect.w--; rect.h--;
+        col = 255;
+        SDL_FillRect(s, &rect, SDL_MapRGBA(s->format, col, col, col, 0xff));
+
+        rect.x++; rect.y++; rect.w--; rect.h--;
+        col = 227;
+        SDL_FillRect(s, &rect, SDL_MapRGBA(s->format, col, col, col, 0xff));
+
+        rect.x++; rect.y++; rect.w-=2; rect.h-=2;
+        col = 240;
+        SDL_FillRect(s, &rect, SDL_MapRGBA(s->format, col, col, col, 0xff));
+    }
+
+    resizeSurface(s, s2);
+    dialog_info.num_of_cells = 1;
+    dialog_info.setImage(s2, texture_format);
+
+    SDL_FreeSurface(s);
+    
+    dialog_info.pos.x = (screen_width  - dialog_info.pos.w)/2;
+    dialog_info.pos.y = (screen_height - dialog_info.pos.h)/2;
+
+    // ----------------------------------------
+    // draw text
+    uchar3 col3={0, 0, 0};
+    dialog_font.top_xy[0] = 7;
+    dialog_font.top_xy[1] = DIALOG_HEADER+5;
+    dialog_font.num_xy[0] = (DIALOG_W-7*2)/dialog_font.pitch_xy[0];
+    dialog_font.num_xy[1] = 3;
+    dialog_font.clear();
+    drawString( mes1, col3, &dialog_font, false, NULL, NULL, &dialog_info );
+
+    dialog_font.top_xy[0] = 5;
+    dialog_font.top_xy[1] = (DIALOG_HEADER-dialog_font.font_size_xy[1])/2;
+    dialog_font.setLineArea( strlen(mes2)/2+1 );
+    dialog_font.clear();
+    drawString( mes2, col3, &dialog_font, false, NULL, NULL, &dialog_info );
+
+    for (int i=0 ; i<2 ; i++){
+        rect.x = DIALOG_W-3-(DIALOG_BUTTON_W+8)*(2-i);
+        rect.y = DIALOG_H-3-(DIALOG_FOOTER+DIALOG_BUTTON_H)/2;
+        rect.w = DIALOG_BUTTON_W; rect.h = DIALOG_BUTTON_H;
+
+        button_rect[i].x += dialog_info.pos.x;
+        button_rect[i].y += dialog_info.pos.y;
+
+        dialog_font.top_xy[0] = rect.x+(rect.w-dialog_font.pitch_xy[0]*strlen(mes[i])/2)/2;
+        dialog_font.top_xy[1] = rect.y+(rect.h-dialog_font.font_size_xy[1])/2;
+        dialog_font.setLineArea( strlen(mes[i])/2+1 );
+        dialog_font.clear();
+        drawString( mes[i], col3, &dialog_font, false, NULL, NULL, &dialog_info );
     }
 }

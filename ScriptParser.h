@@ -44,6 +44,7 @@
 #endif
 
 #define DEFAULT_FONT_SIZE 26
+#define DEFAULT_DIALOG_FONT_SIZE 18
 
 #define DEFAULT_LOOKBACK_NAME0 "uoncur.bmp"
 #define DEFAULT_LOOKBACK_NAME1 "uoffcur.bmp"
@@ -188,11 +189,13 @@ protected:
         char *next_script; // used in gosub and for
         int  var_no, to, step; // used in for
         bool textgosub_flag; // used in textgosub and pretextgosub
+        char *wait_script; // used in gosub with textgosub
 
         NestInfo(){
             previous = next = NULL;
             nest_mode = LABEL;
             textgosub_flag = false;
+            wait_script = NULL;
         };
     } last_tilde;
 
@@ -332,6 +335,7 @@ protected:
     
     /* ---------------------------------------- */
     /* Text related variables */
+    bool render_font_outline;
     char *default_env_font;
     int default_text_speed[3];
     struct Page{
@@ -409,7 +413,7 @@ protected:
      
     /* ---------------------------------------- */
     /* Font related variables */
-    FontInfo *current_font, sentence_font, menu_font, ruby_font;
+    FontInfo *current_font, sentence_font, menu_font, ruby_font, dialog_font;
     struct RubyStruct{
         enum { NONE,
                BODY,
@@ -435,7 +439,6 @@ protected:
         };
     } ruby_struct;
     int shade_distance[2];
-    int old_xy[2];
 
     /* ---------------------------------------- */
     /* RMenu related variables */

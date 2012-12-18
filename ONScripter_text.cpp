@@ -47,37 +47,36 @@ extern int onsLocaleIsTwoByte(unsigned char x);
 //#define IS_TRANSLATION_REQUIRED(x)	\
 //        ( *(x) == (char)0x81 && *((x)+1) >= 0x41 && *((x)+1) <= 0x44 )
 
-SDL_Surface *ONScripter::renderGlyph(TTF_Font *font, Uint16 text)
+void ONScripter::shiftHalfPixelX(SDL_Surface *surface)
 {
-    GlyphCache *gc = root_glyph_cache;
-    GlyphCache *pre_gc = gc;
-    while(1){
-        if (gc->text == text && 
-            gc->font == font){
-            if (gc != pre_gc){
-                pre_gc->next = gc->next;
-                gc->next = root_glyph_cache;
-                root_glyph_cache = gc;
-            }
-            return gc->surface;
+    SDL_LockSurface( surface );
+    unsigned char *buf = (unsigned char*)surface->pixels;
+    for (int i=surface->h ; i!=0 ; --i){
+        unsigned char c = buf[0];
+        for (int j=1 ; j<surface->w ; ++j){
+            buf[j-1] = (buf[j]+c)>>1;
+            c = buf[j];
         }
-        if (gc->next == NULL) break;
-        pre_gc = gc;
-        gc = gc->next;
+        buf[surface->w-1] = c>>1;
+        buf += surface->pitch;
     }
+    SDL_UnlockSurface( surface );
+}
 
-    pre_gc->next = NULL;
-    gc->next = root_glyph_cache;
-    root_glyph_cache = gc;
-
-    gc->text = text;
-    gc->font = font;
-    if (gc->surface) SDL_FreeSurface(gc->surface);
-
-    static SDL_Color fcol={0xff, 0xff, 0xff}, bcol={0, 0, 0};
-    gc->surface = TTF_RenderGlyph_Shaded( font, text, fcol, bcol );
-
-    return gc->surface;
+void ONScripter::shiftHalfPixelY(SDL_Surface *surface)
+{
+    SDL_LockSurface( surface );
+    for (int j=surface->w ; j!=0 ; --j){
+        unsigned char *buf = (unsigned char*)surface->pixels + j;
+        unsigned char c = buf[0];
+        for (int i=1 ; i<surface->h ; ++i){
+            buf += surface->pitch;
+            *(buf-surface->pitch) = (*buf+c)>>1;
+            c = *buf;
+        }
+        *buf = c>>1;
+    }
+    SDL_UnlockSurface( surface );
 }
 
 void ONScripter::drawGlyph( SDL_Surface *dst_surface, FontInfo *info, SDL_Color &color, char* text, int xy[2], bool shadow_flag, AnimationInfo *cache_info, SDL_Rect *clip, SDL_Rect &dst_rect )
@@ -95,22 +94,32 @@ void ONScripter::drawGlyph( SDL_Surface *dst_surface, FontInfo *info, SDL_Color 
 
     int minx, maxx, miny, maxy, advanced;
 #if 0
-    if (TTF_GetFontStyle( (TTF_Font*)info->ttf_font ) !=
+    if (TTF_GetFontStyle( (TTF_Font*)info->ttf_font[0] ) !=
         (info->is_bold?TTF_STYLE_BOLD:TTF_STYLE_NORMAL) )
-        TTF_SetFontStyle( (TTF_Font*)info->ttf_font, (info->is_bold?TTF_STYLE_BOLD:TTF_STYLE_NORMAL));
+        TTF_SetFontStyle( (TTF_Font*)info->ttf_font[0], (info->is_bold?TTF_STYLE_BOLD:TTF_STYLE_NORMAL));
 #endif    
-    TTF_GlyphMetrics( (TTF_Font*)info->ttf_font, unicode,
+    TTF_GlyphMetrics( (TTF_Font*)info->ttf_font[0], unicode,
                       &minx, &maxx, &miny, &maxy, &advanced );
-    //printf("min %d %d %d %d %d %d\n", minx, maxx, miny, maxy, advanced,TTF_FontAscent((TTF_Font*)info->ttf_font)  );
+    //printf("min %d %d %d %d %d %d\n", minx, maxx, miny, maxy, advanced,TTF_FontAscent((TTF_Font*)info->ttf_font[0])  );
+
+    static SDL_Color fcol={0xff, 0xff, 0xff}, bcol={0, 0, 0};
+    SDL_Surface *tmp_surface = TTF_RenderGlyph_Shaded((TTF_Font*)info->ttf_font[0], unicode, fcol, bcol);
     
-    SDL_Surface *tmp_surface = renderGlyph( (TTF_Font*)info->ttf_font, unicode );
+    SDL_Surface *tmp_surface_s = tmp_surface;
+    if (shadow_flag && render_font_outline){
+        tmp_surface_s = TTF_RenderGlyph_Shaded((TTF_Font*)info->ttf_font[1], unicode, fcol, bcol);
+        if (tmp_surface && tmp_surface_s){
+            if ((tmp_surface_s->w-tmp_surface->w) & 1) shiftHalfPixelX(tmp_surface_s);
+            if ((tmp_surface_s->h-tmp_surface->h) & 1) shiftHalfPixelY(tmp_surface_s);
+        }
+    }
 
     bool rotate_flag = false;
     if ( info->getTateyokoMode() == FontInfo::TATE_MODE && IS_ROTATION_REQUIRED(text) ) rotate_flag = true;
     
     dst_rect.x = xy[0] + minx;
-    dst_rect.y = xy[1] + TTF_FontAscent((TTF_Font*)info->ttf_font) - maxy;
-    dst_rect.y -= (TTF_FontHeight((TTF_Font*)info->ttf_font) - info->font_size_xy[1]*screen_ratio1/screen_ratio2)/2;
+    dst_rect.y = xy[1] + TTF_FontAscent((TTF_Font*)info->ttf_font[0]) - maxy;
+    dst_rect.y -= (TTF_FontHeight((TTF_Font*)info->ttf_font[0]) - info->font_size_xy[1]*screen_ratio1/screen_ratio2)/2;
 
     if ( rotate_flag ) dst_rect.x += miny - minx;
         
@@ -119,9 +128,31 @@ void ONScripter::drawGlyph( SDL_Surface *dst_surface, FontInfo *info, SDL_Color 
         dst_rect.y -= info->font_size_xy[0]/2;
     }
 
-    if ( shadow_flag ){
-        dst_rect.x += shade_distance[0];
-        dst_rect.y += shade_distance[1];
+    if (shadow_flag && tmp_surface_s){
+        SDL_Rect dst_rect_s = dst_rect;
+        if (render_font_outline){
+            dst_rect_s.x -= (tmp_surface_s->w - tmp_surface->w)/2;
+            dst_rect_s.y -= (tmp_surface_s->h - tmp_surface->h)/2;
+        }
+        else{
+            dst_rect_s.x += shade_distance[0];
+            dst_rect_s.y += shade_distance[1];
+        }
+
+        if (rotate_flag){
+            dst_rect_s.w = tmp_surface_s->h;
+            dst_rect_s.h = tmp_surface_s->w;
+        }
+        else{
+            dst_rect_s.w = tmp_surface_s->w;
+            dst_rect_s.h = tmp_surface_s->h;
+        }
+
+        if (cache_info)
+            cache_info->blendText( tmp_surface_s, dst_rect_s.x, dst_rect_s.y, bcol, clip, rotate_flag );
+        
+        if (dst_surface)
+            alphaBlendText( dst_surface, dst_rect_s, tmp_surface_s, bcol, clip, rotate_flag );
     }
 
     if ( tmp_surface ){
@@ -140,13 +171,18 @@ void ONScripter::drawGlyph( SDL_Surface *dst_surface, FontInfo *info, SDL_Color 
         if (dst_surface)
             alphaBlendText( dst_surface, dst_rect, tmp_surface, color, clip, rotate_flag );
     }
+
+    if (tmp_surface_s && tmp_surface_s != tmp_surface)
+        SDL_FreeSurface(tmp_surface_s);
+    if (tmp_surface)
+        SDL_FreeSurface(tmp_surface);
 }
 
 void ONScripter::drawChar( char* text, FontInfo *info, bool flush_flag, bool lookback_flag, SDL_Surface *surface, AnimationInfo *cache_info, SDL_Rect *clip )
 {
     //printf("draw %x-%x[%s] %d, %d\n", text[0], text[1], text, info->xy[0], info->xy[1] );
     
-    if ( info->ttf_font == NULL ){
+    if ( info->ttf_font[0] == NULL ){
         if ( info->openFont( font_file, screen_ratio1, screen_ratio2 ) == NULL ){
             fprintf( stderr, "can't open font file: %s\n", font_file );
             quit();
@@ -169,8 +205,8 @@ void ONScripter::drawChar( char* text, FontInfo *info, bool flush_flag, bool loo
         }
     }
 
-    old_xy[0] = info->x();
-    old_xy[1] = info->y();
+    info->old_xy[0] = info->x();
+    info->old_xy[1] = info->y();
 
     char text2[2] = {text[0], 0};
     if (IS_TWO_BYTE(text[0])) text2[1] = text[1];
@@ -180,16 +216,9 @@ void ONScripter::drawChar( char* text, FontInfo *info, bool flush_flag, bool loo
         xy[0] = info->x() * screen_ratio1 / screen_ratio2;
         xy[1] = info->y() * screen_ratio1 / screen_ratio2;
     
-        SDL_Color color;
+        SDL_Color color = {info->color[0], info->color[1], info->color[2]};
         SDL_Rect dst_rect;
-        if ( info->is_shadow ){
-            color.r = color.g = color.b = 0;
-            drawGlyph(surface, info, color, text2, xy, true, cache_info, clip, dst_rect);
-        }
-        color.r = info->color[0];
-        color.g = info->color[1];
-        color.b = info->color[2];
-        drawGlyph( surface, info, color, text2, xy, false, cache_info, clip, dst_rect );
+        drawGlyph( surface, info, color, text2, xy, info->is_shadow, cache_info, clip, dst_rect );
 
         if ( surface == accumulation_surface &&
              !flush_flag &&
@@ -197,7 +226,12 @@ void ONScripter::drawChar( char* text, FontInfo *info, bool flush_flag, bool loo
             dirty_rect.add( dst_rect );
         }
         else if ( flush_flag ){
-            info->addShadeArea(dst_rect, shade_distance);
+            if (info->is_shadow){
+                if (render_font_outline)
+                    info->addShadeArea(dst_rect, -1, -1, 3, 3);
+                else
+                    info->addShadeArea(dst_rect, shade_distance[0], shade_distance[1]);
+            }
             flushDirect( dst_rect, REFRESH_NONE_MODE );
         }
 
@@ -306,7 +340,7 @@ void ONScripter::drawString( const char *str, uchar3 color, FontInfo *info, bool
 
     /* ---------------------------------------- */
     /* Calculate the area of selection */
-    SDL_Rect clipped_rect = info->calcUpdatedArea(start_xy);
+    SDL_Rect clipped_rect = info->calcUpdatedArea(start_xy, screen_ratio1, screen_ratio2);
 
     SDL_Rect scaled_clipped_rect;
     scaled_clipped_rect.x = clipped_rect.x * screen_ratio1 / screen_ratio2;
@@ -314,7 +348,12 @@ void ONScripter::drawString( const char *str, uchar3 color, FontInfo *info, bool
     scaled_clipped_rect.w = clipped_rect.w * screen_ratio1 / screen_ratio2;
     scaled_clipped_rect.h = clipped_rect.h * screen_ratio1 / screen_ratio2;
 
-    info->addShadeArea(scaled_clipped_rect, shade_distance);
+    if (info->is_shadow){
+        if (render_font_outline)
+            info->addShadeArea(scaled_clipped_rect, -1, -1, 3, 3);
+        else
+            info->addShadeArea(scaled_clipped_rect, shade_distance[0], shade_distance[1]);
+    }
     
     if ( flush_flag )
         flush( refresh_shadow_text_mode, &scaled_clipped_rect );
@@ -389,7 +428,7 @@ void ONScripter::restoreTextBuffer(SDL_Surface *surface)
 
 void ONScripter::enterTextDisplayMode(bool text_flag)
 {
-    if (line_enter_status <= 1 && saveon_flag && internal_saveon_flag && text_flag){
+    if (line_enter_status <= 1 && (!pretextgosub_label || saveon_flag) && internal_saveon_flag && text_flag){
         saveSaveFile( -1 );
         internal_saveon_flag = false;
     }
@@ -566,7 +605,8 @@ void ONScripter::startRuby(const char *buf, FontInfo &info)
 {
     ruby_struct.stage = RubyStruct::BODY;
     ruby_font = info;
-    ruby_font.ttf_font = NULL;
+    ruby_font.ttf_font[0] = NULL;
+    ruby_font.ttf_font[1] = NULL;
     if ( ruby_struct.font_size_xy[0] != -1 )
         ruby_font.font_size_xy[0] = ruby_struct.font_size_xy[0];
     else
@@ -618,7 +658,7 @@ void ONScripter::endRuby(bool flush_flag, bool lookback_flag, SDL_Surface *surfa
 
 int ONScripter::textCommand()
 {
-    if (line_enter_status <= 1 && saveon_flag && internal_saveon_flag){
+    if (line_enter_status <= 1 && (!pretextgosub_label || saveon_flag) && internal_saveon_flag){
         saveSaveFile( -1 );
         internal_saveon_flag = false;
     }
@@ -671,6 +711,7 @@ int ONScripter::textCommand()
             current_page->tag = NULL;
         }
 
+        saveon_flag = false;
         gosubReal( pretextgosub_label, script_h.getCurrent() );
         line_enter_status = 1;
 
@@ -724,8 +765,6 @@ bool ONScripter::checkLineBreak(const char *buf, FontInfo *fi)
 
 void ONScripter::processEOT()
 {
-    int i, n;
-    
     if ( skip_mode & SKIP_TO_EOL ){
         flush( refreshMode() );
         skip_mode &= ~SKIP_TO_EOL;
@@ -733,18 +772,7 @@ void ONScripter::processEOT()
 
     if (!sentence_font.isLineEmpty() && !new_line_skip_flag){
         // if sentence_font.isLineEmpty() is true, newPage() might be already issued
-        if (page_enter_status == 1){
-            n = sentence_font.num_xy[0] - sentence_font.xy[0]/2;
-            for (i=0 ; i<n ; i++){
-                current_page->add(LOC_TWOBYTE_SYMBOL(' ')[0]);
-                current_page->add(LOC_TWOBYTE_SYMBOL(' ')[1]);
-                sentence_font.advanceCharInHankaku(2);
-            }
-        }
-        else{
-            if (!sentence_font.isEndOfLine()) current_page->add( 0x0a );
-        }
-
+        if (!sentence_font.isEndOfLine()) current_page->add( 0x0a );
         sentence_font.newLine();
     }
 

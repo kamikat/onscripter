@@ -18,7 +18,7 @@
 最近あまり時間がとれないため更新が非常に遅くなることがありますがご了承下さい。<br>
 Since: Feb. 6, 2002<br>
 <!--Last updated: Sep. 12, 2010 (サーバ移行)<br>-->
-Last updated: May 31, 2012 (ソース更新)<br>
+Last updated: Oct. 29, 2012 (ソース更新)<br>
 <!--Last updated: May 25, 2010 (バイナリパッケージ追加・修正)<br>-->
 <!--Last updated: Jul. 12, 2009 (Experimental ソース更新)<br>-->
 </div> <!-- header -->
@@ -86,10 +86,11 @@ Last updated: May 31, 2012 (ソース更新)<br>
 
 <table><tr>
 <td>最新版</td>
-<td><a href="onscripter-20120531.tar.gz">onscripter-20120531.tar.gz</a></td>
+<td><a href="onscripter-20121029.tar.gz">onscripter-20121029.tar.gz</a></td>
 </tr><tr>
 <td>旧版</td>
-<td><a href="onscripter-20120527.tar.gz">onscripter-20120527.tar.gz</a></td>
+<td><a href="onscripter-20121019.tar.gz">onscripter-20121019.tar.gz</a></td>
+
 </tr></table>
 <!--  <li> <a href="onscripter-exp-20090712.tar.gz">onscripter-exp-20090712.tar.gz</a>(実験版, バグ修正)-->
 
@@ -124,8 +125,7 @@ Last updated: May 31, 2012 (ソース更新)<br>
 
 <tr><td>Brain (WindowsCE 6.0)</td><td><a href="http://lycoris2475.xxxxxxxx.jp/">ONScripter for Brain</a></td></tr>
 
-<tr><td rowspan=2>NetBSD, DragonFly BSD</td><td class="span"><a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/games/onscripter/">pkgsrc</a></td></tr>
-<tr><td><a href="http://www.tunagu.gr.jp/cgi-bin/fswiki/wiki.cgi/isihara?page=pkgsrc-wip-jp%A4%E1%A4%E2">pkgsrc-wip-jpめも</a> (<a href="http://cvs.sourceforge.jp/cgi-bin/viewcvs.cgi/pkgsrc-wip/wip-jp/onscripter/">pkgsrc-wip/wip-jp/onscripter</a>)</td></tr>
+<tr><td>NetBSD</td><td><a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/games/onscripter/">pkgsrc</a></td></tr>
 
 <tr><td>OS2/Warp</td><td><a href="http://www.os2.jp/modules/search/index.php?query=onscripter&amp;action=results&amp;showcontext=1">package at OS2.jp</a></td></tr>
 
@@ -305,6 +305,7 @@ avi 命令を使ってムービーを再生する場合には入れてください。Linux で動作確認をして
 <tr><td>--force-button-shortcut</td><td>getenter と useescspc の命令を無視します。つまり、マウスのクリックを強制的に esc, space, return キーに割り付けます。</td></tr>
 <tr><td>--enable-wheeldown-advance</td><td>テキスト終端でのクリック待ちの際に、マウスのホイールダウン操作をクリック操作として扱います。textgosub でクリック待ちをカスタマイズしているときには効果はありません。</td></tr>
 <tr><td>--disable-rescale</td><td>PDA_WIDTH や PDA_AUTOSIZE を定義してコンパイルした ONScripter において、アーカイブから画像を読み込む際に、画像の大きさを端末のスクリーンの大きさに変換しないようにします。あらかじめ<a href="#archive-compression">アーカイブ圧縮</a>によって画像の大きさを端末のスクリーンの大きさに変換しておいたアーカイブを一緒に使用すると、変換処理が省略されるため動作が高速になります。ただし、この場合でもアーカイブ外の画像ファイルは大きさが変換されます。</td></tr>
+<tr><td>--render-font-outline</td><td>SDL_ttf 2.0.10 以降でサポートされたフォントのアウトライン描画機能を使い、影付き文字を黒い輪郭の袋文字として表示します。文字がくっきりとして見やすくなると思います。</td></tr>
 <tr><td>--edit</td><td>z キーを押したときに、音量及び変数の編集モードに入れるようになります。</td></tr>
 </table>
 
@@ -531,8 +532,6 @@ xxxは、使用するフォーマットに合わせて変更してください。</p>
   <dt> Windows の場合。
   <dd> <a href="http://www.libsdl.org/projects/SDL_mixer/timidity/timidity.tar.gz">timidity.tar.gz</a>をダウンロードして c:\ 以下に展開してください。
        これをしなくても MIDI が鳴ったと思っていたのですが、こうしないと落ちるようです。
-  <dt> Mac OS X の場合。
-  <dd> <a href="http://homepage.mac.com/anmira/onscripter/">ONScripter for Mac OS X</a>（かつらさん）のバイナリに添付されている外部プログラムを利用して演奏が可能です。（当方未確認）
   <dt> Unix系(動作確認は Linux)で外部 MIDI 音源を利用して演奏する場合。
   <dd> playmidi 等の外部音源を使用できる MIDI player をインストールし、環境変数 MUSIC_CMD を設定してください。（例 MUSIC_CMD=/usr/bin/playmidi）<br>
        当方では、シリアル接続で外部音源を繋ぎ、MUSIC_CMD に '/usr/bin/midiplay -q -o /dev/ttyS0' を設定して動作確認をしています。<br>

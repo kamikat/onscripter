@@ -54,7 +54,8 @@ int ONScripter::loadSaveFile2( int file_version )
     readStr( &window_effect.anim.image_name ); // probably
 
     sentence_font.clear();
-    sentence_font.ttf_font  = NULL;
+    sentence_font.ttf_font[0] = NULL;
+    sentence_font.ttf_font[1] = NULL;
     sentence_font.top_xy[0] = readInt();
     sentence_font.top_xy[1] = readInt();
     sentence_font.num_xy[0] = readInt();

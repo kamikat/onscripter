@@ -283,7 +283,7 @@ int AnimationInfo::doClipping( SDL_Rect *dst, SDL_Rect *clip, SDL_Rect *clipped 
         Uint32 mask_rb = (((((*src_buffer & 0xff00ff) - temp ) * mask2 ) >> 8 ) + temp ) & 0xff00ff;\
         temp = *dst_buffer & 0x00ff00;\
         Uint32 mask_g  = (((((*src_buffer & 0x00ff00) - temp ) * mask2 ) >> 8 ) + temp ) & 0x00ff00;\
-        *dst_buffer = mask_rb | mask_g;\
+        *dst_buffer = mask_rb | mask_g | 0xff000000;\
     }                        \
     alphap += 4;\
 }
@@ -318,7 +318,7 @@ int AnimationInfo::doClipping( SDL_Rect *dst, SDL_Rect *clip, SDL_Rect *clipped 
     Uint32 mask_g = (*dst_buffer & GMASK) +\
                     ((((*src_buffer & GMASK) * mask2) >> 8) & GMASK);\
     mask_g |= ((mask_g & RMASK) ? GMASK : 0);\
-    *dst_buffer = (mask_rb & RBMASK) | (mask_g & GMASK);\
+    *dst_buffer = (mask_rb & RBMASK) | (mask_g & GMASK) | 0xff000000;\
     alphap += 4;\
 }
 #endif
@@ -350,7 +350,7 @@ int AnimationInfo::doClipping( SDL_Rect *dst, SDL_Rect *clip, SDL_Rect *clipped 
     Uint32 mask_b = (*dst_buffer & BMASK) -\
                     ((((*src_buffer & BMASK) * mask2) >> 8) & BMASK);\
     mask_b &= ((mask_b & ~BMASK) ? 0 : BMASK);\
-    *dst_buffer = (mask_r & RMASK) | (mask_g & GMASK) | (mask_b & BMASK);\
+    *dst_buffer = (mask_r & RMASK) | (mask_g & GMASK) | (mask_b & BMASK) | 0xff000000;\
     alphap += 4;\
 }
 #endif

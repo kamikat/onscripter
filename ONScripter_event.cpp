@@ -459,13 +459,22 @@ bool ONScripter::trapHandler()
 /* **************************************** *
  * Event handlers
  * **************************************** */
-void ONScripter::mouseMoveEvent( SDL_MouseMotionEvent *event )
+bool ONScripter::mouseMoveEvent( SDL_MouseMotionEvent *event )
 {
     current_button_state.x = event->x * screen_width / screen_device_width;
     current_button_state.y = event->y * screen_width / screen_device_width;
 
-    if ( event_mode & WAIT_BUTTON_MODE )
+    if ( event_mode & WAIT_BUTTON_MODE ){
         mouseOverCheck( current_button_state.x, current_button_state.y );
+        if (getmouseover_flag &&
+            current_over_button >= getmouseover_lower &&
+            current_over_button <= getmouseover_upper){
+            current_button_state.button = current_over_button;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool ONScripter::mousePressEvent( SDL_MouseButtonEvent *event )
@@ -1076,7 +1085,7 @@ void ONScripter::runEventLoop()
                 SDL_Touch *touch = SDL_GetTouch(event.tfinger.touchId);
                 tmp_event.motion.x = device_width *event.tfinger.x/touch->xres - (device_width -screen_device_width)/2;
                 tmp_event.motion.y = device_height*event.tfinger.y/touch->yres - (device_height-screen_device_height)/2;
-                mouseMoveEvent( &tmp_event.motion );
+                if (mouseMoveEvent( &tmp_event.motion )) return;
                 if (btndown_flag){
                     event.button.type = SDL_MOUSEBUTTONDOWN;
                     event.button.button = SDL_BUTTON_LEFT;
@@ -1090,12 +1099,12 @@ void ONScripter::runEventLoop()
             }
             break;
           case SDL_FINGERDOWN:
-	    {
+          {
                 SDL_Touch *touch = SDL_GetTouch(event.tfinger.touchId);
                 tmp_event.motion.x = device_width *event.tfinger.x/touch->xres - (device_width -screen_device_width)/2;
                 tmp_event.motion.y = device_height*event.tfinger.y/touch->yres - (device_height-screen_device_height)/2;
-                mouseMoveEvent( &tmp_event.motion );
-	    }
+                if (mouseMoveEvent( &tmp_event.motion )) return;
+          }
             if ( btndown_flag ){
                 SDL_Touch *touch = SDL_GetTouch(event.tfinger.touchId);
                 tmp_event.button.type = SDL_MOUSEBUTTONDOWN;
@@ -1135,7 +1144,7 @@ void ONScripter::runEventLoop()
             break;
 #else
           case SDL_MOUSEMOTION:
-            mouseMoveEvent( &event.motion );
+            if (mouseMoveEvent( &event.motion )) return;
             if (btndown_flag){
                 if (event.motion.state & SDL_BUTTON(SDL_BUTTON_LEFT))
                     tmp_event.button.button = SDL_BUTTON_LEFT;

@@ -174,8 +174,12 @@ void ONScripter::setupAnimationInfo( AnimationInfo *anim, FontInfo *info )
             f_info.font_size_xy[1] = anim->font_size_xy[1];
             if ( anim->font_pitch >= 0 )
                 f_info.pitch_xy[0] = anim->font_pitch;
-            f_info.ttf_font = NULL;
+            f_info.ttf_font[0] = NULL;
+            f_info.ttf_font[1] = NULL;
         }
+
+        if (f_info.ttf_font[0] == NULL)
+            f_info.openFont( font_file, screen_ratio1, screen_ratio2 );
 
         SDL_Rect pos;
         if (anim->is_tight_region){
@@ -188,7 +192,7 @@ void ONScripter::setupAnimationInfo( AnimationInfo *anim, FontInfo *info )
             
             int xy[2] = {0, 0};
             f_info.setXY(f_info.num_xy[0]-1, f_info.num_xy[1]-1);
-            pos = f_info.calcUpdatedArea(xy);
+            pos = f_info.calcUpdatedArea(xy, screen_ratio1, screen_ratio2);
 
             f_info.xy[0] = xy_bak[0];
             f_info.xy[1] = xy_bak[1];

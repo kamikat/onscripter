@@ -34,7 +34,7 @@ extern int psp_power_resume_number;
 static struct FontContainer{
     FontContainer *next;
     int size;
-    TTF_Font *font;
+    TTF_Font *font[2];
 #if defined(PSP)
     SDL_RWops *rw_ops;
     int power_resume_number;
@@ -44,7 +44,7 @@ static struct FontContainer{
     FontContainer(){
         size = 0;
         next = NULL;
-        font = NULL;
+        font[0] = font[1] = NULL;
 #if defined(PSP)
         rw_ops = NULL;
         power_resume_number = 0;
@@ -54,7 +54,7 @@ static struct FontContainer{
 
 FontInfo::FontInfo()
 {
-    ttf_font = NULL;
+    ttf_font[0] = ttf_font[1] = NULL;
 
     color[0]        = color[1]        = color[2]        = 0xff;
     on_color[0]     = on_color[1]     = on_color[2]     = 0xff;
@@ -103,7 +103,11 @@ void *FontInfo::openFont( char *font_file, int ratio1, int ratio2 )
         fc->next->power_resume_number = psp_power_resume_number;
         strcpy(fc->next->name, font_file);
 #else
-        fc->next->font = TTF_OpenFont( font_file, font_size * ratio1 / ratio2 );
+        fc->next->font[0] = TTF_OpenFont( font_file, font_size * ratio1 / ratio2 );
+#if (SDL_TTF_MAJOR_VERSION>=2) && (SDL_TTF_MINOR_VERSION>=0) && (SDL_TTF_PATCHLEVEL>=10)
+        fc->next->font[1] = TTF_OpenFont( font_file, font_size * ratio1 / ratio2 );
+        TTF_SetFontOutline(fc->next->font[1], 1);
+#endif
 #endif
     }
 #if defined(PSP)
@@ -114,7 +118,8 @@ void *FontInfo::openFont( char *font_file, int ratio1, int ratio2 )
     }
 #endif
 
-    ttf_font = (void*)fc->next->font;
+    ttf_font[0] = (void*)fc->next->font[0];
+    ttf_font[1] = (void*)fc->next->font[1];
     
     return fc->next->font;
 }
@@ -212,7 +217,7 @@ void FontInfo::addLineOffset(int offset)
     line_offset_xy[tateyoko_mode] += offset;
 }
 
-SDL_Rect FontInfo::calcUpdatedArea(int start_xy[2])
+SDL_Rect FontInfo::calcUpdatedArea(int start_xy[2], int ratio1, int ratio2)
 {
     SDL_Rect rect;
     
@@ -227,7 +232,7 @@ SDL_Rect FontInfo::calcUpdatedArea(int start_xy[2])
         }
         rect.y = top_xy[1] + start_xy[1]*pitch_xy[1]/2;
         rect.h = pitch_xy[1]*(xy[1]-start_xy[1]+2)/2;
-        if (ttf_font) rect.h += font_size_xy[1] - TTF_FontAscent((TTF_Font*)ttf_font);
+        if (ttf_font) rect.h += font_size_xy[1] - TTF_FontAscent((TTF_Font*)ttf_font[0])*ratio2/ratio1;
         if (rubyon_flag) rect.h += pitch_xy[1] - font_size_xy[1];
     }
     else{
@@ -248,22 +253,23 @@ SDL_Rect FontInfo::calcUpdatedArea(int start_xy[2])
     return rect;
 }
 
-void FontInfo::addShadeArea(SDL_Rect &rect, int shade_distance[2])
+void FontInfo::addShadeArea(SDL_Rect &rect, int dx, int dy, int dw, int dh)
 {
-    if (is_shadow){
-        if (shade_distance[0]>0)
-            rect.w += shade_distance[0];
-        else{
-            rect.x += shade_distance[0];
-            rect.w -= shade_distance[0];
-        }
-        if (shade_distance[1]>0)
-            rect.h += shade_distance[1];
-        else{
-            rect.y += shade_distance[1];
-            rect.h -= shade_distance[1];
-        }
+    if (dx > 0)
+        rect.w += dx;
+    else{
+        rect.x += dx;
+        rect.w -= dx;
     }
+    rect.w += dw;
+
+    if (dy > 0)
+        rect.h += dy;
+    else{
+        rect.y += dy;
+        rect.h -= dy;
+    }
+    rect.h += dh;
 }
 
 int FontInfo::initRuby(FontInfo &body_info, int body_count, int ruby_count)

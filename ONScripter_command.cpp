@@ -35,14 +35,47 @@ extern "C" Uint32 SDLCALL bgmfadeCallback( Uint32 interval, void *param );
 
 int ONScripter::yesnoboxCommand()
 {
+    bool yesno_flag = true;
+    if ( script_h.isName( "okcancelbox" ) ) yesno_flag = false;
+
     script_h.readInt();
-    int no = script_h.current_variable.var_no;
-    script_h.setInt( &script_h.current_variable, 1 );
+    script_h.pushVariable();
 
     script_h.readStr();
-    script_h.readStr();
+    const char *mes1 = script_h.saveStringBuffer();
+    const char *mes2 = script_h.readStr();
+    SDL_Rect button_rect[2];
+    buildDialog(yesno_flag, mes1, mes2, button_rect);
     
-    printf( "*** yesnoboxCommand(): %%%d is set to 1\n", no);
+    show_dialog_flag = true;
+    dirty_rect.add(dialog_info.pos);
+    flush(refreshMode());
+
+    while(1){
+        event_mode = WAIT_BUTTON_MODE;
+        waitEvent(-1);
+
+        if (current_button_state.button == -1){
+            script_h.setInt(&script_h.pushed_variable, 0);
+            break;
+        }
+
+        int i=0;
+        for (; i<2 ; i++){
+            if (current_button_state.x >= button_rect[i].x &&
+                current_button_state.x <  button_rect[i].x+button_rect[i].w &&
+                current_button_state.y >= button_rect[i].y &&
+                current_button_state.y <  button_rect[i].y+button_rect[i].h){
+                script_h.setInt(&script_h.pushed_variable, 1-i);
+                break;
+            }
+        }
+        if (i<2) break;
+    }
+    
+    show_dialog_flag = false;
+    dirty_rect.add(dialog_info.pos);
+    flush(refreshMode());
 
     return RET_CONTINUE;
 }
@@ -594,7 +627,8 @@ int ONScripter::sevolCommand()
 
 void ONScripter::setwindowCore()
 {
-    sentence_font.ttf_font  = NULL;
+    sentence_font.ttf_font[0] = NULL;
+    sentence_font.ttf_font[1] = NULL;
     sentence_font.top_xy[0] = script_h.readInt();
     sentence_font.top_xy[1] = script_h.readInt();
     sentence_font.num_xy[0] = script_h.readInt();
@@ -635,8 +669,8 @@ void ONScripter::setwindowCore()
         sentence_font.window_color[0] = sentence_font.window_color[1] = sentence_font.window_color[2] = 0xff;
     }
 
-    old_xy[0] = sentence_font.x();
-    old_xy[1] = sentence_font.y();
+    sentence_font.old_xy[0] = sentence_font.x();
+    sentence_font.old_xy[1] = sentence_font.y();
 }
 
 int ONScripter::setwindow3Command()
@@ -2298,6 +2332,16 @@ int ONScripter::getmouseposCommand()
     return RET_CONTINUE;
 }
 
+int ONScripter::getmouseoverCommand()
+{
+    getmouseover_flag = true;
+
+    getmouseover_lower = script_h.readInt();
+    getmouseover_upper = script_h.readInt();
+    
+    return RET_CONTINUE;
+}
+
 int ONScripter::getlogCommand()
 {
     script_h.readVariable();
@@ -2344,10 +2388,10 @@ int ONScripter::getenterCommand()
 int ONScripter::getcursorpos2Command()
 {
     script_h.readInt();
-    script_h.setInt( &script_h.current_variable, old_xy[0] );
+    script_h.setInt( &script_h.current_variable, sentence_font.old_xy[0] );
     
     script_h.readInt();
-    script_h.setInt( &script_h.current_variable, old_xy[1] );
+    script_h.setInt( &script_h.current_variable, sentence_font.old_xy[1] );
     
     return RET_CONTINUE;
 }
@@ -2917,7 +2961,8 @@ int ONScripter::cselbtnCommand()
     button->no          = button_no;
     button->sprite_no   = csel_no;
 
-    sentence_font.ttf_font = csel_info.ttf_font;
+    sentence_font.ttf_font[0] = csel_info.ttf_font[0];
+    sentence_font.ttf_font[1] = csel_info.ttf_font[1];
 
     return RET_CONTINUE;
 }
@@ -3341,10 +3386,10 @@ int ONScripter::bltCommand()
         SDL_Rect dst_rect = {dx,dy,dw,dh};
 
 #ifdef USE_SDL_RENDERER
-        dst_rect.dx = dst_rect.dx * screen_device_width / screen_width + (device_width -screen_device_width )/2;
-        dst_rect.dy = dst_rect.dy * screen_device_width / screen_width + (device_height-screen_device_height)/2;
-        dst_rect.dw = dst_rect.dw * screen_device_width / screen_width;
-        dst_rect.dh = dst_rect.dh * screen_device_width / screen_width;
+        dst_rect.x = dst_rect.x * screen_device_width / screen_width + (device_width -screen_device_width )/2;
+        dst_rect.y = dst_rect.y * screen_device_width / screen_width + (device_height-screen_device_height)/2;
+        dst_rect.w = dst_rect.w * screen_device_width / screen_width;
+        dst_rect.h = dst_rect.h * screen_device_width / screen_width;
         SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, btndef_info.image_surface);
         SDL_RenderCopy(renderer, texture, &src_rect, &dst_rect);
         SDL_RenderPresent(renderer);

@@ -52,8 +52,6 @@
 #define DEFAULT_WM_TITLE "ONScripter"
 #define DEFAULT_WM_ICON  "ONScripter"
 
-#define NUM_GLYPH_CACHE 30
-
 class ONScripter : public ScriptParser
 {
 public:
@@ -75,6 +73,7 @@ public:
     void enableButtonShortCut();
     void enableWheelDownAdvance();
     void disableRescale();
+    void renderFontOutline();
     void enableEdit();
     void setKeyEXE(const char *path);
     int  getWidth(){ return screen_width;};
@@ -157,6 +156,7 @@ public:
     int playstopCommand();
     int playonceCommand();
     int playCommand();
+    int okcancelboxCommand();
     int ofscopyCommand();
     int negaCommand();
     int mspCommand();
@@ -212,6 +212,7 @@ public:
     int getpageCommand();
     int getmp3volCommand();
     int getmouseposCommand();
+    int getmouseoverCommand();
     int getlogCommand();
     int getinsertCommand();
     int getfunctionCommand();
@@ -297,7 +298,7 @@ protected:
     void keyUpEvent( SDL_KeyboardEvent *event );
     bool keyPressEvent( SDL_KeyboardEvent *event );
     bool mousePressEvent( SDL_MouseButtonEvent *event );
-    void mouseMoveEvent( SDL_MouseMotionEvent *event );
+    bool mouseMoveEvent( SDL_MouseMotionEvent *event );
     void timerEvent(int count=-1);
     void flushEventSub( SDL_Event &event );
     void flushEvent();
@@ -492,6 +493,10 @@ private:
     bool getcursor_flag;
     bool spclclk_flag;
 
+    bool getmouseover_flag;
+    int  getmouseover_lower;
+    int  getmouseover_upper;
+
     void resetSentenceFont();
     void deleteButtonLink();
     void refreshMouseOverButton();
@@ -533,6 +538,11 @@ private:
     void saveEnvData();
     
     /* ---------------------------------------- */
+    /* Dialog related variables */
+    bool show_dialog_flag;
+    AnimationInfo dialog_info;
+
+    /* ---------------------------------------- */
     /* Lookback related variables */
     AnimationInfo lookback_info[4];
     
@@ -547,17 +557,12 @@ private:
     bool draw_cursor_flag;
     int  textgosub_clickstr_state;
     int  indent_offset;
-    struct GlyphCache{
-        GlyphCache *next;
-        Uint16 text;
-        TTF_Font *font;
-        SDL_Surface *surface;
-    } *root_glyph_cache, glyph_cache[NUM_GLYPH_CACHE];
 
     int refreshMode();
     void setwindowCore();
     
-    SDL_Surface *renderGlyph(TTF_Font *font, Uint16 text);
+    void shiftHalfPixelX(SDL_Surface *surface);
+    void shiftHalfPixelY(SDL_Surface *surface);
     void drawGlyph( SDL_Surface *dst_surface, FontInfo *info, SDL_Color &color, char *text, int xy[2], bool shadow_flag, AnimationInfo *cache_info, SDL_Rect *clip, SDL_Rect &dst_rect );
     void drawChar( char* text, FontInfo *info, bool flush_flag, bool lookback_flag, SDL_Surface *surface, AnimationInfo *cache_info, SDL_Rect *clip=NULL );
     void drawString( const char *str, uchar3 color, FontInfo *info, bool flush_flag, SDL_Surface *surface, SDL_Rect *rect = NULL, AnimationInfo *cache_info=NULL );
@@ -696,7 +701,6 @@ private:
     
     /* ---------------------------------------- */
     /* Text event related variables */
-    TTF_Font *text_font;
     bool new_line_skip_flag;
     int text_speed_no;
     int num_fingers; // numbur of fingers touching on the screen
@@ -780,6 +784,7 @@ private:
     bool executeSystemYesNo( int caller, int file_no=0 );
     void setupLookbackButton();
     void executeSystemLookback();
+    void buildDialog(bool yesno_flag, const char *mes1, const char *mes2, SDL_Rect button_rect[2]);
 };
 
 #endif // __ONSCRIPTER_LABEL_H__

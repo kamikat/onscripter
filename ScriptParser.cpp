@@ -63,6 +63,7 @@ ScriptParser::ScriptParser()
     file_io_buf_len = 0;
     save_data_len = 0;
 
+    render_font_outline = false;
     page_list = NULL;
 
     /* ---------------------------------------- */
@@ -171,6 +172,7 @@ void ScriptParser::reset()
     sentence_font.reset();
     menu_font.reset();
     ruby_font.reset();
+    dialog_font.reset();
 
     current_font = &sentence_font;
     shade_distance[0] = 1;
@@ -214,6 +216,15 @@ void ScriptParser::reset()
     menu_font.window_color[0] = menu_font.window_color[1] = menu_font.window_color[2] = 0xcc;
 
     deleteRMenuLink();
+
+    /* ---------------------------------------- */
+    /* Dialog related variables */
+    dialog_font.font_size_xy[0] = DEFAULT_DIALOG_FONT_SIZE;
+    dialog_font.font_size_xy[1] = DEFAULT_DIALOG_FONT_SIZE;
+    dialog_font.pitch_xy[0] = dialog_font.font_size_xy[0];
+    dialog_font.pitch_xy[1] = 2 + dialog_font.font_size_xy[1];
+    dialog_font.is_bold = false;
+    dialog_font.is_shadow = false;
 
     /* ---------------------------------------- */
     /* Effect related variables */
