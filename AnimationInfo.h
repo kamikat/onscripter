@@ -2,7 +2,7 @@
  * 
  *  AnimationInfo.h - General image storage class of ONScripter
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -130,7 +130,8 @@ public:
     void remove();
     void removeTag();
 
-    bool proceedAnimation(int t);
+    void stepAnimation(int t);
+    bool proceedAnimation();
 
     void setCell(int cell);
     static int doClipping( SDL_Rect *dst, SDL_Rect *clip, SDL_Rect *clipped=NULL );

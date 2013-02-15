@@ -2,7 +2,7 @@
  * 
  *  ONScripter_text.cpp - Text parser of ONScripter
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -793,7 +793,6 @@ bool ONScripter::processText()
         /* Kinsoku process */
         if ( checkLineBreak( script_h.getStringBuffer() + string_buffer_offset, &sentence_font ) ){
             sentence_font.newLine();
-            current_page->add(0x0a);
             for (int i=0 ; i<indent_offset ; i++){
                 current_page->add(0x81);
                 current_page->add(0x40);

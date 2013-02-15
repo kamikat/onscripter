@@ -2,7 +2,7 @@
  * 
  *  ONScripter.cpp - Execution block parser of ONScripter
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -36,8 +36,6 @@ extern "C" void waveCallback( int channel );
 #define DLL_FILE "dll.txt"
 #define DEFAULT_ENV_FONT "‚l‚r ƒSƒVƒbƒN"
 #define DEFAULT_AUTOMODE_TIME 1000
-#define DEFAULT_CURSOR_WAIT    ":l/3,160,2;cursor0.bmp"
-#define DEFAULT_CURSOR_NEWPAGE ":l/3,160,2;cursor1.bmp"
 
 static void SDL_Quit_Wrapper()
 {
@@ -1152,38 +1150,6 @@ void ONScripter::decodeExbtnControl( const char *ctl_str, SDL_Rect *check_src_re
             ai->visible = true;
             dirty_rect.add( ai->pos );
         }
-    }
-}
-
-void ONScripter::loadCursor( int no, const char *str, int x, int y, bool abs_flag )
-{
-    AnimationInfo *ai = &cursor_info[no];
-    
-    if (str){
-        ai->setImageName( str );
-    }
-    else{
-        if (no == 0) ai->setImageName( DEFAULT_CURSOR_WAIT );
-        else         ai->setImageName( DEFAULT_CURSOR_NEWPAGE );
-    }
-    ai->orig_pos.x = x;
-    ai->orig_pos.y = y;
-    ai->scalePosXY( screen_ratio1, screen_ratio2 );
-
-    parseTaggedString( ai );
-    setupAnimationInfo( ai );
-
-    if ( filelog_flag )
-        script_h.findAndAddLog( script_h.log_info[ScriptHandler::FILE_LOG], ai->file_name, true ); // a trick for save file
-    ai->abs_flag = abs_flag;
-    if ( ai->image_surface )
-        ai->visible = true;
-    else
-        ai->remove();
-
-    if (str == NULL){
-        if (no == 0) ai->deleteImageName();
-        else         ai->deleteImageName();
     }
 }
 

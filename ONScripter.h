@@ -2,7 +2,7 @@
  * 
  *  ONScripter.h - Execution block parser of ONScripter
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -276,7 +276,7 @@ public:
     
 protected:
     /* ---------------------------------------- */
-    /* Event related variables */
+    /* variables relevant to Event */
     enum { NOT_EDIT_MODE            = 0,
            EDIT_SELECT_MODE         = 1,
            EDIT_VARIABLE_INDEX_MODE = 2,
@@ -286,6 +286,7 @@ protected:
            EDIT_SE_VOLUME_MODE      = 6
     };
     
+    int remaining_time;
     int variable_edit_mode;
     int variable_edit_index;
     int variable_edit_num;
@@ -299,12 +300,11 @@ protected:
     bool keyPressEvent( SDL_KeyboardEvent *event );
     bool mousePressEvent( SDL_MouseButtonEvent *event );
     bool mouseMoveEvent( SDL_MouseMotionEvent *event );
-    void timerEvent(int count=-1);
+    void timerEvent();
     void flushEventSub( SDL_Event &event );
     void flushEvent();
     void removeEvent(int type);
     void removeBGMFadeEvent();
-    void advancePhase( int count=0 );
     void waitEventSub(int count);
     bool waitEvent(int count);
     bool trapHandler();
@@ -382,7 +382,7 @@ private:
     void quit();
 
     /* ---------------------------------------- */
-    /* Script related variables */
+    /* variables relevant to script */
     enum { REFRESH_NONE_MODE        = 0,
            REFRESH_NORMAL_MODE      = 1,
            REFRESH_SAYA_MODE        = 2,
@@ -419,7 +419,7 @@ private:
     unsigned long num_loaded_images;
     
     /* ---------------------------------------- */
-    /* Button related variables */
+    /* variables relevant to button */
     AnimationInfo btndef_info;
 
     struct ButtonState{
@@ -508,46 +508,34 @@ private:
     int getNumberFromBuffer( const char **buf );
     
     /* ---------------------------------------- */
-    /* Background related variables */
-    AnimationInfo bg_info;
+    /* variables relevant to animation */
+    AnimationInfo bg_info, cursor_info[2];
+    AnimationInfo tachi_info[3]; // 0 ... left, 1 ... center, 2 ... right
+    AnimationInfo *sprite_info, *sprite2_info;
+    AnimationInfo *bar_info[MAX_PARAM_NUM], *prnum_info[MAX_PARAM_NUM];
+    AnimationInfo lookback_info[4];
+    AnimationInfo dialog_info;
 
-    /* ---------------------------------------- */
-    /* Tachi-e related variables */
-    /* 0 ... left, 1 ... center, 2 ... right */
-    AnimationInfo tachi_info[3];
     int human_order[3];
-
-    /* ---------------------------------------- */
-    /* Sprite related variables */
-    AnimationInfo *sprite_info;
-    AnimationInfo *sprite2_info;
     bool all_sprite_hide_flag;
     bool all_sprite2_hide_flag;
+    bool show_dialog_flag;
     
-    /* ---------------------------------------- */
-    /* Parameter related variables */
-    AnimationInfo *bar_info[MAX_PARAM_NUM], *prnum_info[MAX_PARAM_NUM];
+    int  calcDurationToNextAnimation();
+    void stepAnimation(int t);
+    void proceedAnimation();
+    void setupAnimationInfo(AnimationInfo *anim, FontInfo *info=NULL);
+    void parseTaggedString(AnimationInfo *anim );
+    void drawTaggedSurface(SDL_Surface *dst_surface, AnimationInfo *anim, SDL_Rect &clip);
+    void stopAnimation(int click);
+    void loadCursor(int no, const char *str, int x, int y, bool abs_flag = false);
 
-    /* ---------------------------------------- */
-    /* Cursor related variables */
-    AnimationInfo cursor_info[2];
-
-    void loadCursor( int no, const char *str, int x, int y, bool abs_flag = false );
     void saveAll();
     void loadEnvData();
     void saveEnvData();
     
     /* ---------------------------------------- */
-    /* Dialog related variables */
-    bool show_dialog_flag;
-    AnimationInfo dialog_info;
-
-    /* ---------------------------------------- */
-    /* Lookback related variables */
-    AnimationInfo lookback_info[4];
-    
-    /* ---------------------------------------- */
-    /* Text related variables */
+    /* variables relevant to text */
     bool is_kinsoku;
     AnimationInfo text_info;
     AnimationInfo sentence_font_info;
@@ -589,7 +577,7 @@ private:
     int skip_mode;
 
     /* ---------------------------------------- */
-    /* Effect related variables */
+    /* variables relevant to effect */
     DirtyRect dirty_rect; // only this region is updated
     int effect_counter, effect_duration; // counter in each effect
     int effect_timer_resolution;
@@ -616,7 +604,7 @@ private:
     void effectBreakup( char *params, int duration );
 
     /* ---------------------------------------- */
-    /* Select related variables */
+    /* variables relevant to selection */
     enum { SELECT_GOTO_MODE=0, SELECT_GOSUB_MODE=1, SELECT_NUM_MODE=2, SELECT_CSEL_MODE=3 };
     struct SelectLink{
         struct SelectLink *next;
@@ -639,7 +627,7 @@ private:
     struct ButtonLink *getSelectableSentence( char *buffer, FontInfo *info, bool flush_flag = true, bool nofile_flag = false );
     
     /* ---------------------------------------- */
-    /* Sound related variables */
+    /* variables relevant to sound */
     enum{
         SOUND_NONE    =  0,
         SOUND_PRELOAD =  1,
@@ -700,7 +688,7 @@ private:
     void playClickVoice();
     
     /* ---------------------------------------- */
-    /* Text event related variables */
+    /* variables relevant to text event */
     bool new_line_skip_flag;
     int text_speed_no;
     int num_fingers; // numbur of fingers touching on the screen
@@ -718,15 +706,6 @@ private:
     int parseLine();
 
     void mouseOverCheck( int x, int y );
-    
-    /* ---------------------------------------- */
-    /* Animation */
-    int  proceedAnimation();
-    void resetRemainingTime( int t );
-    void setupAnimationInfo( AnimationInfo *anim, FontInfo *info=NULL );
-    void parseTaggedString( AnimationInfo *anim );
-    void drawTaggedSurface( SDL_Surface *dst_surface, AnimationInfo *anim, SDL_Rect &clip );
-    void stopAnimation( int click );
     
     /* ---------------------------------------- */
     /* File I/O */
@@ -784,7 +763,7 @@ private:
     bool executeSystemYesNo( int caller, int file_no=0 );
     void setupLookbackButton();
     void executeSystemLookback();
-    void buildDialog(bool yesno_flag, const char *mes1, const char *mes2, SDL_Rect button_rect[2]);
+    void buildDialog(bool yesno_flag, const char *mes1, const char *mes2);
 };
 
 #endif // __ONSCRIPTER_LABEL_H__

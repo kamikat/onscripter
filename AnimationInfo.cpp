@@ -2,7 +2,7 @@
  * 
  *  AnimationInfo.cpp - General image storage class of ONScripter
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -181,10 +181,15 @@ void AnimationInfo::removeTag(){
 // 1 ... stop at the end
 // 2 ... reverse at the end
 // 3 ... no animation
-bool AnimationInfo::proceedAnimation(int t)
+void AnimationInfo::stepAnimation(int t)
 {
-    remaining_time -= t;
-    if (remaining_time > 0) return false;
+    if (visible && is_animatable)
+        remaining_time -= t;
+}
+
+bool AnimationInfo::proceedAnimation()
+{
+    if (!visible || !is_animatable || remaining_time > 0) return false;
     
     bool is_changed = false;
     

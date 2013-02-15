@@ -2,7 +2,7 @@
  * 
  *  ONScripter_image.cpp - Image processing in ONScripter
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -337,7 +337,7 @@ void ONScripter::alphaBlend( SDL_Surface *mask_surface,
                            src_color1 * mask2) >> 8) & 0xff00ff;    \
         Uint32 mask_g  = (((*dst_buffer & 0x00ff00) * mask1 +       \
                            src_color2 * mask2) >> 8) & 0x00ff00;    \
-        *dst_buffer    = mask_rb | mask_g;                          \
+        *dst_buffer    = 0xff000000 | mask_rb | mask_g;             \
     }                                                               \
 }
 #endif        
@@ -382,7 +382,7 @@ void ONScripter::alphaBlendText( SDL_Surface *dst_surface, SDL_Rect dst_rect,
 #else
     Uint32 src_color1 = (color.r << fmt->Rshift) | (color.b << fmt->Bshift);
     Uint32 src_color2 = (color.g << fmt->Gshift);
-    Uint32 src_color3 = src_color1 | src_color2;
+    Uint32 src_color3 = (0xff << fmt->Ashift) | src_color1 | src_color2;
 #endif    
 
     ONSBuf *dst_buffer = (AnimationInfo::ONSBuf *)dst_surface->pixels + dst_surface->w * dst_rect.y + dst_rect.x;
@@ -546,15 +546,14 @@ void ONScripter::refreshSurface( SDL_Surface *surface, SDL_Rect *clip_src, int r
             drawTaggedSurface( surface, &cursor_info[1], clip );
     }
 
+    if (show_dialog_flag)
+        drawTaggedSurface( surface, &dialog_info, clip );
+
     ButtonLink *bl = root_button_link.next;
     while( bl ){
         if (bl->show_flag > 0)
             drawTaggedSurface( surface, bl->anim[bl->show_flag-1], clip );
         bl = bl->next;
-    }
-
-    if (show_dialog_flag){
-        drawTaggedSurface( surface, &dialog_info, clip );
     }
 }
 

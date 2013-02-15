@@ -2,7 +2,7 @@
  * 
  *  ONScripter_command.cpp - Command executer of ONScripter
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -44,9 +44,10 @@ int ONScripter::yesnoboxCommand()
     script_h.readStr();
     const char *mes1 = script_h.saveStringBuffer();
     const char *mes2 = script_h.readStr();
-    SDL_Rect button_rect[2];
-    buildDialog(yesno_flag, mes1, mes2, button_rect);
-    
+    ButtonLink *tmp_button_link = root_button_link.next;
+    root_button_link.next = NULL;
+    buildDialog(yesno_flag, mes1, mes2);
+
     show_dialog_flag = true;
     dirty_rect.add(dialog_info.pos);
     flush(refreshMode());
@@ -55,25 +56,21 @@ int ONScripter::yesnoboxCommand()
         event_mode = WAIT_BUTTON_MODE;
         waitEvent(-1);
 
-        if (current_button_state.button == -1){
+        if (current_button_state.button == -1 ||
+            current_button_state.button == 2){
             script_h.setInt(&script_h.pushed_variable, 0);
             break;
         }
-
-        int i=0;
-        for (; i<2 ; i++){
-            if (current_button_state.x >= button_rect[i].x &&
-                current_button_state.x <  button_rect[i].x+button_rect[i].w &&
-                current_button_state.y >= button_rect[i].y &&
-                current_button_state.y <  button_rect[i].y+button_rect[i].h){
-                script_h.setInt(&script_h.pushed_variable, 1-i);
-                break;
-            }
+        else if (current_button_state.button == 1){
+            script_h.setInt(&script_h.pushed_variable, 1);
+            break;
         }
-        if (i<2) break;
     }
     
     show_dialog_flag = false;
+    delete root_button_link.next->next;
+    delete root_button_link.next;
+    root_button_link.next = tmp_button_link;
     dirty_rect.add(dialog_info.pos);
     flush(refreshMode());
 

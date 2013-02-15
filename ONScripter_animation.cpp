@@ -2,7 +2,7 @@
  * 
  *  ONScripter_animation.cpp - Methods to manipulate AnimationInfo
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -23,37 +23,38 @@
 
 #include "ONScripter.h"
 
-int ONScripter::proceedAnimation()
+#define DEFAULT_CURSOR_WAIT    ":l/3,160,2;cursor0.bmp"
+#define DEFAULT_CURSOR_NEWPAGE ":l/3,160,2;cursor1.bmp"
+
+int ONScripter::calcDurationToNextAnimation()
 {
-    int i, min = -1; // minimum duration
-    AnimationInfo *anim;
+    int min = -1; // minimum duration
     
-    for ( i=0 ; i<3 ; i++ ){
-        anim = &tachi_info[i];
-        if ( anim->visible && anim->is_animatable ){
+    for (int i=0 ; i<3 ; i++){
+        AnimationInfo *anim = &tachi_info[i];
+        if (anim->visible && anim->is_animatable){
             if (min == -1 || min > anim->remaining_time)
                 min = anim->remaining_time;
         }
     }
 
-    for ( i=MAX_SPRITE_NUM-1 ; i>=0 ; i-- ){
-        anim = &sprite_info[i];
-        if ( anim->visible && anim->is_animatable ){
+    for (int i=MAX_SPRITE_NUM-1 ; i>=0 ; i--){
+        AnimationInfo *anim = &sprite_info[i];
+        if (anim->visible && anim->is_animatable){
             if (min == -1 || min > anim->remaining_time)
                 min = anim->remaining_time;
         }
     }
 
-    if ( !textgosub_label &&
-         ( clickstr_state == CLICK_WAIT ||
-           clickstr_state == CLICK_NEWPAGE ) ){
-        
-        if      ( clickstr_state == CLICK_WAIT )
+    if (!textgosub_label &&
+         (clickstr_state == CLICK_WAIT || clickstr_state == CLICK_NEWPAGE)){
+        AnimationInfo *anim;
+        if      (clickstr_state == CLICK_WAIT)
             anim = &cursor_info[0];
-        else if ( clickstr_state == CLICK_NEWPAGE )
+        else if (clickstr_state == CLICK_NEWPAGE)
             anim = &cursor_info[1];
 
-        if ( anim->visible && anim->is_animatable ){
+        if (anim->visible && anim->is_animatable){
             if (min == -1 || min > anim->remaining_time)
                 min = anim->remaining_time;
         }
@@ -66,66 +67,78 @@ int ONScripter::proceedAnimation()
     }
 #endif
 
-    if ( min == -1 ) min = 0;
+    if (min == -1) min = 0;
 
     return min;
 }
 
-void ONScripter::resetRemainingTime( int t )
+void ONScripter::stepAnimation(int t)
 {
-    int i;
-    AnimationInfo *anim;
-    
-    for ( i=0 ; i<3 ; i++ ){
-        anim = &tachi_info[i];
-        if ( anim->visible && anim->is_animatable){
-            if (anim->proceedAnimation(t))
-                flushDirect( anim->pos, refreshMode() | (draw_cursor_flag?REFRESH_CURSOR_MODE:0) );
-        }
-    }
+    for (int i=0 ; i<3 ; i++)
+        tachi_info[i].stepAnimation(t);
         
-    for ( i=MAX_SPRITE_NUM-1 ; i>=0 ; i-- ){
-        anim = &sprite_info[i];
-        if ( anim->visible && anim->is_animatable ){
-            if (anim->proceedAnimation(t))
-                flushDirect( anim->pos, refreshMode() | (draw_cursor_flag?REFRESH_CURSOR_MODE:0) );
-        }
+    for (int i=MAX_SPRITE_NUM-1 ; i>=0 ; i--)
+        sprite_info[i].stepAnimation(t);
+
+#ifdef USE_LUA
+    if (lua_handler.is_animatable && !script_h.isExternalScript())
+        lua_handler.remaining_time -= t;
+#endif
+
+    if (!textgosub_label){
+        if (clickstr_state == CLICK_WAIT)
+            cursor_info[0].stepAnimation(t);
+        else if (clickstr_state == CLICK_NEWPAGE)
+            cursor_info[1].stepAnimation(t);
     }
+}
+
+void ONScripter::proceedAnimation()
+{
+    for (int i=0 ; i<3 ; i++)
+        if (tachi_info[i].proceedAnimation())
+            flushDirect(tachi_info[i].pos, refreshMode() | (draw_cursor_flag?REFRESH_CURSOR_MODE:0));
+        
+    for (int i=MAX_SPRITE_NUM-1 ; i>=0 ; i--)
+        if (sprite_info[i].proceedAnimation())
+            flushDirect(sprite_info[i].pos, refreshMode() | (draw_cursor_flag?REFRESH_CURSOR_MODE:0));
+
 #ifdef USE_LUA
     if (lua_handler.is_animatable && !script_h.isExternalScript()){
-        lua_handler.remaining_time -= t;
-
         if (lua_handler.remaining_time == 0){
             lua_handler.remaining_time = lua_handler.duration_time;
 
-            int lua_event_mode = event_mode;
+            int tmp_event_mode = event_mode;
+            int tmp_remaining_time = remaining_time;
             int tmp_string_buffer_offset = string_buffer_offset;
+
             char *current = script_h.getCurrent();
             lua_handler.callback(LUAHandler::LUA_ANIMATION);
             script_h.setCurrent(current);
             readToken();
+
             string_buffer_offset = tmp_string_buffer_offset;
-            event_mode = lua_event_mode;
+            remaining_time = tmp_remaining_time;
+            event_mode = tmp_event_mode;
         }
     }
 #endif
-    if ( !textgosub_label &&
-         ( clickstr_state == CLICK_WAIT ||
-           clickstr_state == CLICK_NEWPAGE ) ){
-        if ( clickstr_state == CLICK_WAIT )
+
+    if (!textgosub_label &&
+        (clickstr_state == CLICK_WAIT || clickstr_state == CLICK_NEWPAGE)){
+        AnimationInfo *anim;
+        if (clickstr_state == CLICK_WAIT)
             anim = &cursor_info[0];
-        else if ( clickstr_state == CLICK_NEWPAGE )
+        else if (clickstr_state == CLICK_NEWPAGE)
             anim = &cursor_info[1];
         
-        if ( anim->visible && anim->is_animatable ){
-            if (anim->proceedAnimation(t)){
-                SDL_Rect dst_rect = anim->pos;
-                if ( !anim->abs_flag ){
-                    dst_rect.x += sentence_font.x() * screen_ratio1 / screen_ratio2;
-                    dst_rect.y += sentence_font.y() * screen_ratio1 / screen_ratio2;
-                }
-                flushDirect( dst_rect, refreshMode() | (draw_cursor_flag?REFRESH_CURSOR_MODE:0) );
+        if (anim->proceedAnimation()){
+            SDL_Rect dst_rect = anim->pos;
+            if (!anim->abs_flag){
+                dst_rect.x += sentence_font.x() * screen_ratio1 / screen_ratio2;
+                dst_rect.y += sentence_font.y() * screen_ratio1 / screen_ratio2;
             }
+            flushDirect( dst_rect, refreshMode() | (draw_cursor_flag?REFRESH_CURSOR_MODE:0) );
         }
     }
 }
@@ -417,4 +430,36 @@ void ONScripter::stopAnimation( int click )
     }
 
     flushDirect( dst_rect, refreshMode() );
+}
+
+void ONScripter::loadCursor(int no, const char *str, int x, int y, bool abs_flag)
+{
+    AnimationInfo *ai = &cursor_info[no];
+    
+    if (str){
+        ai->setImageName( str );
+    }
+    else{
+        if (no == 0) ai->setImageName( DEFAULT_CURSOR_WAIT );
+        else         ai->setImageName( DEFAULT_CURSOR_NEWPAGE );
+    }
+    ai->orig_pos.x = x;
+    ai->orig_pos.y = y;
+    ai->scalePosXY( screen_ratio1, screen_ratio2 );
+
+    parseTaggedString( ai );
+    setupAnimationInfo( ai );
+
+    if ( filelog_flag )
+        script_h.findAndAddLog( script_h.log_info[ScriptHandler::FILE_LOG], ai->file_name, true ); // a trick for save file
+    ai->abs_flag = abs_flag;
+    if ( ai->image_surface )
+        ai->visible = true;
+    else
+        ai->remove();
+
+    if (str == NULL){
+        if (no == 0) ai->deleteImageName();
+        else         ai->deleteImageName();
+    }
 }

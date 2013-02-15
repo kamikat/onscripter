@@ -2,7 +2,7 @@
  *
  *  ONScripter_rmenu.cpp - Right click menu handler of ONScripter
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -647,7 +647,7 @@ void ONScripter::executeSystemLookback()
     }
 }
 
-void ONScripter::buildDialog(bool yesno_flag, const char *mes1, const char *mes2, SDL_Rect button_rect[2])
+void ONScripter::buildDialog(bool yesno_flag, const char *mes1, const char *mes2)
 {
     SDL_PixelFormat *fmt = image_surface->format;
     SDL_Surface *s = SDL_CreateRGBSurface( SDL_SWSURFACE, DIALOG_W, DIALOG_H,
@@ -671,6 +671,36 @@ void ONScripter::buildDialog(bool yesno_flag, const char *mes1, const char *mes2
     col = 240;
     SDL_FillRect(s, &rect, SDL_MapRGBA(s->format, col, col, col, 0xff));
 
+    uchar3 col3={0, 0, 0};
+    dialog_font.top_xy[0] = 7;
+    dialog_font.top_xy[1] = DIALOG_HEADER+5;
+    dialog_font.num_xy[0] = (DIALOG_W-7*2)/dialog_font.pitch_xy[0];
+    dialog_font.num_xy[1] = 3;
+    dialog_font.clear();
+    drawString( mes1, col3, &dialog_font, false, s, NULL, NULL );
+
+    dialog_font.top_xy[0] = 5;
+    dialog_font.top_xy[1] = (DIALOG_HEADER-dialog_font.font_size_xy[1])/2;
+    dialog_font.setLineArea( strlen(mes2)/2+1 );
+    dialog_font.clear();
+    drawString( mes2, col3, &dialog_font, false, s, NULL, NULL );
+
+    SDL_Surface *s2 = s;
+    if (screen_ratio2 != screen_ratio1){
+        s2 = SDL_CreateRGBSurface( SDL_SWSURFACE, DIALOG_W*screen_ratio1/screen_ratio2, DIALOG_H*screen_ratio1/screen_ratio2,
+                                   fmt->BitsPerPixel, fmt->Rmask, fmt->Gmask, fmt->Bmask, fmt->Amask );
+        resizeSurface(s, s2);
+        SDL_FreeSurface(s);
+    }
+
+    dialog_info.deleteSurface();
+    dialog_info.num_of_cells = 1;
+    dialog_info.setImage(s2, texture_format);
+    
+    dialog_info.pos.x = (screen_width  - dialog_info.pos.w)/2;
+    dialog_info.pos.y = (screen_height - dialog_info.pos.h)/2;
+
+    // buttons
     const char* mes[2];
     if (yesno_flag){
         mes[0] = MESSAGE_YES;
@@ -680,75 +710,59 @@ void ONScripter::buildDialog(bool yesno_flag, const char *mes1, const char *mes2
         mes[0] = MESSAGE_OK;
         mes[1] = MESSAGE_CANCEL;
     }
-    for (int i=0 ; i<2 ; i++){
-        rect.x = DIALOG_W-3-(DIALOG_BUTTON_W+8)*(2-i);
-        rect.y = DIALOG_H-3-(DIALOG_FOOTER+DIALOG_BUTTON_H)/2;
-        rect.w = DIALOG_BUTTON_W; rect.h = DIALOG_BUTTON_H;
-
-        button_rect[i].x = rect.x*screen_ratio1/screen_ratio2;
-        button_rect[i].y = rect.y*screen_ratio1/screen_ratio2;
-        button_rect[i].w = rect.w*screen_ratio1/screen_ratio2;
-        button_rect[i].h = rect.h*screen_ratio1/screen_ratio2;
-
-        col = 105;
-        SDL_FillRect(s, &rect, SDL_MapRGBA(s->format, col, col, col, 0xff));
-
-        rect.w--; rect.h--;
-        col = 255;
-        SDL_FillRect(s, &rect, SDL_MapRGBA(s->format, col, col, col, 0xff));
-
-        rect.x++; rect.y++; rect.w--; rect.h--;
-        col = 227;
-        SDL_FillRect(s, &rect, SDL_MapRGBA(s->format, col, col, col, 0xff));
-
-        rect.x++; rect.y++; rect.w-=2; rect.h-=2;
-        col = 240;
-        SDL_FillRect(s, &rect, SDL_MapRGBA(s->format, col, col, col, 0xff));
-    }
-
-    SDL_Surface *s2 = s;
-    if (screen_ratio2 != screen_ratio1){
-        s2 = SDL_CreateRGBSurface( SDL_SWSURFACE, DIALOG_W*screen_ratio1/screen_ratio2, DIALOG_H*screen_ratio1/screen_ratio2,
-                                   fmt->BitsPerPixel, fmt->Rmask, fmt->Gmask, fmt->Bmask, fmt->Amask );
-        resizeSurface(s, s2);
-        SDL_FreeSurface(s);
-    }
-    
-    dialog_info.deleteSurface();
-    dialog_info.num_of_cells = 1;
-    dialog_info.setImage(s2, texture_format);
-    
-    dialog_info.pos.x = (screen_width  - dialog_info.pos.w)/2;
-    dialog_info.pos.y = (screen_height - dialog_info.pos.h)/2;
-
-    // ----------------------------------------
-    // draw text
-    uchar3 col3={0, 0, 0};
-    dialog_font.top_xy[0] = 7;
-    dialog_font.top_xy[1] = DIALOG_HEADER+5;
-    dialog_font.num_xy[0] = (DIALOG_W-7*2)/dialog_font.pitch_xy[0];
-    dialog_font.num_xy[1] = 3;
-    dialog_font.clear();
-    drawString( mes1, col3, &dialog_font, false, NULL, NULL, &dialog_info );
-
-    dialog_font.top_xy[0] = 5;
-    dialog_font.top_xy[1] = (DIALOG_HEADER-dialog_font.font_size_xy[1])/2;
-    dialog_font.setLineArea( strlen(mes2)/2+1 );
-    dialog_font.clear();
-    drawString( mes2, col3, &dialog_font, false, NULL, NULL, &dialog_info );
 
     for (int i=0 ; i<2 ; i++){
-        rect.x = DIALOG_W-3-(DIALOG_BUTTON_W+8)*(2-i);
-        rect.y = DIALOG_H-3-(DIALOG_FOOTER+DIALOG_BUTTON_H)/2;
-        rect.w = DIALOG_BUTTON_W; rect.h = DIALOG_BUTTON_H;
+        SDL_Surface *bs = SDL_CreateRGBSurface( SDL_SWSURFACE, DIALOG_BUTTON_W*2, DIALOG_BUTTON_H,
+                                                fmt->BitsPerPixel, fmt->Rmask, fmt->Gmask, fmt->Bmask, fmt->Amask );
 
-        button_rect[i].x += dialog_info.pos.x;
-        button_rect[i].y += dialog_info.pos.y;
+        for (int j=0 ; j<2 ; j++){
+            rect.x = DIALOG_BUTTON_W*j;
+            rect.y = 0;
+            rect.w = DIALOG_BUTTON_W; rect.h = DIALOG_BUTTON_H;
 
-        dialog_font.top_xy[0] = rect.x+(rect.w-dialog_font.pitch_xy[0]*strlen(mes[i])/2)/2;
-        dialog_font.top_xy[1] = rect.y+(rect.h-dialog_font.font_size_xy[1])/2;
-        dialog_font.setLineArea( strlen(mes[i])/2+1 );
-        dialog_font.clear();
-        drawString( mes[i], col3, &dialog_font, false, NULL, NULL, &dialog_info );
+            col = 105;
+            SDL_FillRect(bs, &rect, SDL_MapRGBA(bs->format, col, col, col, 0xff));
+
+            rect.w--; rect.h--;
+            col = 255;
+            SDL_FillRect(bs, &rect, SDL_MapRGBA(bs->format, col, col, col, 0xff));
+
+            rect.x++; rect.y++; rect.w--; rect.h--;
+            col = 227;
+            SDL_FillRect(bs, &rect, SDL_MapRGBA(bs->format, col, col, col, 0xff));
+
+            rect.x++; rect.y++; rect.w-=2; rect.h-=2;
+            col = 240;
+            if (j==1) col = 214;
+            SDL_FillRect(bs, &rect, SDL_MapRGBA(bs->format, col, col, col, 0xff));
+
+            dialog_font.top_xy[0] = rect.x+(rect.w-dialog_font.pitch_xy[0]*strlen(mes[i])/2)/2;
+            dialog_font.top_xy[1] = rect.y+(rect.h-dialog_font.font_size_xy[1])/2;
+            dialog_font.setLineArea( strlen(mes[i])/2+1 );
+            dialog_font.clear();
+            drawString( mes[i], col3, &dialog_font, false, bs, NULL, NULL );
+        }
+
+        SDL_Surface *bs2 = bs;
+        if (screen_ratio2 != screen_ratio1){
+            bs2 = SDL_CreateRGBSurface( SDL_SWSURFACE, DIALOG_BUTTON_W*2*screen_ratio1/screen_ratio2, DIALOG_BUTTON_H*screen_ratio1/screen_ratio2,
+                                        fmt->BitsPerPixel, fmt->Rmask, fmt->Gmask, fmt->Bmask, fmt->Amask );
+            resizeSurface(bs, bs2);
+            SDL_FreeSurface(bs);
+        }
+
+        ButtonLink *btn = new ButtonLink();
+        btn->no = i+1;
+        btn->button_type = ButtonLink::TMP_SPRITE_BUTTON;
+        btn->anim[0] = new AnimationInfo();
+        btn->anim[0]->num_of_cells = 2;
+        btn->anim[0]->setImage(bs2, texture_format);
+        btn->show_flag = 1;
+        btn->anim[0]->pos.x = dialog_info.pos.x + DIALOG_W-3-(DIALOG_BUTTON_W+8)*(2-i);
+        btn->anim[0]->pos.y = dialog_info.pos.y + DIALOG_H-3-(DIALOG_FOOTER+DIALOG_BUTTON_H)/2;
+        btn->anim[0]->visible = true;
+        btn->select_rect = btn->image_rect = btn->anim[0]->pos;
+
+        root_button_link.insert( btn );
     }
 }
