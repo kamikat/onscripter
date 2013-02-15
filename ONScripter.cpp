@@ -432,7 +432,7 @@ int ONScripter::init()
     }
     
     // ----------------------------------------
-    // Sound related variables
+    // variables relevant to sound
     this->cdaudio_flag = cdaudio_flag;
 #ifdef USE_CDROM
     cdrom_info = NULL;
@@ -537,8 +537,7 @@ void ONScripter::reset()
     getret_int = 0;
     
     // ----------------------------------------
-    // Sound related variables
-    
+    // variables relevant to sound
     wave_play_loop_flag = false;
     midi_play_loop_flag = false;
     music_play_loop_flag = false;
@@ -1050,17 +1049,17 @@ void ONScripter::newPage()
     flush( refreshMode(), &sentence_font_info.pos );
 }
 
-struct ONScripter::ButtonLink *ONScripter::getSelectableSentence( char *buffer, FontInfo *info, bool flush_flag, bool nofile_flag )
+ButtonLink *ONScripter::getSelectableSentence( char *buffer, FontInfo *info, bool flush_flag, bool nofile_flag )
 {
     int current_text_xy[2];
     current_text_xy[0] = info->xy[0];
     current_text_xy[1] = info->xy[1];
     
-    ButtonLink *button_link = new ButtonLink();
-    button_link->button_type = ButtonLink::TMP_SPRITE_BUTTON;
-    button_link->show_flag = 1;
+    ButtonLink *bl = new ButtonLink();
+    bl->button_type = ButtonLink::TMP_SPRITE_BUTTON;
+    bl->show_flag = 1;
 
-    AnimationInfo *ai = button_link->anim[0] = new AnimationInfo();
+    AnimationInfo *ai = bl->anim[0] = new AnimationInfo();
     
     ai->trans_mode = AnimationInfo::TRANS_STRING;
     ai->is_single_line = false;
@@ -1080,7 +1079,7 @@ struct ONScripter::ButtonLink *ONScripter::getSelectableSentence( char *buffer, 
     ai->visible = true;
 
     setupAnimationInfo( ai, info );
-    button_link->select_rect = button_link->image_rect = ai->pos;
+    bl->select_rect = bl->image_rect = ai->pos;
 
     info->newLine();
     if (info->getTateyokoMode() == FontInfo::YOKO_MODE)
@@ -1088,9 +1087,9 @@ struct ONScripter::ButtonLink *ONScripter::getSelectableSentence( char *buffer, 
     else
         info->xy[1] = current_text_xy[1];
 
-    dirty_rect.add( button_link->image_rect );
+    dirty_rect.add( bl->image_rect );
     
-    return button_link;
+    return bl;
 }
 
 void ONScripter::decodeExbtnControl( const char *ctl_str, SDL_Rect *check_src_rect, SDL_Rect *check_dst_rect )

@@ -176,12 +176,11 @@ void ONScripter::setupAnimationInfo( AnimationInfo *anim, FontInfo *info )
                 f_info.setLineArea( strlen(anim->file_name)/2+1 );
             f_info.clear();
             
-            f_info.pitch_xy[0] = f_info.pitch_xy[0] - f_info.font_size_xy[0] + anim->font_size_xy[0];
             f_info.font_size_xy[0] = anim->font_size_xy[0];
-            f_info.pitch_xy[1] = f_info.pitch_xy[1] - f_info.font_size_xy[1] + anim->font_size_xy[1];
             f_info.font_size_xy[1] = anim->font_size_xy[1];
-            if ( anim->font_pitch >= 0 )
-                f_info.pitch_xy[0] = anim->font_pitch;
+            f_info.pitch_xy[0] = anim->font_pitch[0];
+            f_info.pitch_xy[1] = anim->font_pitch[1];
+
             f_info.ttf_font[0] = NULL;
             f_info.ttf_font[1] = NULL;
         }
@@ -298,14 +297,13 @@ void ONScripter::parseTaggedString( AnimationInfo *anim )
                 script_h.pushCurrent( buffer );
                 anim->font_size_xy[0] = script_h.readInt();
                 anim->font_size_xy[1] = script_h.readInt();
+                anim->font_pitch[0] = anim->font_size_xy[0];
+                anim->font_pitch[1] = anim->font_size_xy[0]; // dummy
                 if ( script_h.getEndStatus() & ScriptHandler::END_COMMA ){
-                    anim->font_pitch = script_h.readInt() + anim->font_size_xy[0];
+                    anim->font_pitch[0] += script_h.readInt();
                     if ( script_h.getEndStatus() & ScriptHandler::END_COMMA ){
                         script_h.readInt(); // 0 ... normal, 1 ... no anti-aliasing, 2 ... Fukuro
                     }
-                }
-                else{
-                    anim->font_pitch = anim->font_size_xy[0];
                 }
                 buffer = script_h.getNext();
                 script_h.popCurrent();
@@ -313,8 +311,10 @@ void ONScripter::parseTaggedString( AnimationInfo *anim )
             else{
                 anim->font_size_xy[0] = sentence_font.font_size_xy[0];
                 anim->font_size_xy[1] = sentence_font.font_size_xy[1];
-                anim->font_pitch = sentence_font.pitch_xy[0];
+                anim->font_pitch[0] = sentence_font.pitch_xy[0];
+                anim->font_pitch[1] = sentence_font.pitch_xy[1];
             }
+
             while(buffer[0] != '#' && buffer[0] != '\0') buffer++;
             i=0;
             while( buffer[i] == '#' ){

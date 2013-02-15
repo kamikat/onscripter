@@ -2,7 +2,7 @@
  * 
  *  FontInfo.cpp - Font information storage class of ONScripter
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -235,13 +235,12 @@ SDL_Rect FontInfo::calcUpdatedArea(int start_xy[2], int ratio1, int ratio2)
             rect.w = pitch_xy[0]*num_xy[0];
         }
         rect.y = top_xy[1] + start_xy[1]*pitch_xy[1]/2;
-        rect.h = pitch_xy[1]*(xy[1]-start_xy[1]+2)/2;
-        if (ttf_font[0]) rect.h += font_size_xy[1] - TTF_FontAscent((TTF_Font*)ttf_font[0])*ratio2/ratio1;
+        rect.h = font_size_xy[1] + pitch_xy[1]*(xy[1]-start_xy[1])/2;
         if (rubyon_flag) rect.h += pitch_xy[1] - font_size_xy[1];
     }
     else{
         rect.x = top_xy[0] + pitch_xy[0]*xy[0]/2;
-        rect.w = pitch_xy[0]*(start_xy[0]-xy[0]+2)/2;
+        rect.w = font_size_xy[0] + pitch_xy[0]*(start_xy[0]-xy[0])/2;
         if (rubyon_flag) rect.w += font_size_xy[0]-pitch_xy[0];
         if (start_xy[0] == xy[0]){
             rect.y = top_xy[1] + pitch_xy[1]*start_xy[1]/2;

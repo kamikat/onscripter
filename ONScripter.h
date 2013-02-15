@@ -26,6 +26,7 @@
 
 #include "ScriptParser.h"
 #include "DirtyRect.h"
+#include "ButtonLink.h"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
@@ -81,13 +82,9 @@ public:
         
     int  openScript();
     int  init();
-    void runEventLoop();
 
-    void reset(); // used if definereset
-    void resetSub(); // used if reset
-
-    /* ---------------------------------------- */
-    /* Commands */
+    // ----------------------------------------
+    // Commands
     typedef int (ONScripter::*FuncList)();
     struct FuncLUT{
         char command[30];
@@ -274,62 +271,26 @@ public:
     int allsphideCommand();
     int amspCommand();
     
-protected:
-    /* ---------------------------------------- */
-    /* variables relevant to Event */
-    enum { NOT_EDIT_MODE            = 0,
-           EDIT_SELECT_MODE         = 1,
-           EDIT_VARIABLE_INDEX_MODE = 2,
-           EDIT_VARIABLE_NUM_MODE   = 3,
-           EDIT_MP3_VOLUME_MODE     = 4,
-           EDIT_VOICE_VOLUME_MODE   = 5,
-           EDIT_SE_VOLUME_MODE      = 6
-    };
-    
-    int remaining_time;
-    int variable_edit_mode;
-    int variable_edit_index;
-    int variable_edit_num;
-    int variable_edit_sign;
-    int  shift_pressed_status;
-    int  ctrl_pressed_status;
-    
-    void variableEditMode( SDL_KeyboardEvent *event );
-    bool keyDownEvent( SDL_KeyboardEvent *event );
-    void keyUpEvent( SDL_KeyboardEvent *event );
-    bool keyPressEvent( SDL_KeyboardEvent *event );
-    bool mousePressEvent( SDL_MouseButtonEvent *event );
-    bool mouseMoveEvent( SDL_MouseMotionEvent *event );
-    void timerEvent();
-    void flushEventSub( SDL_Event &event );
-    void flushEvent();
-    void removeEvent(int type);
-    void removeBGMFadeEvent();
-    void waitEventSub(int count);
-    bool waitEvent(int count);
-    bool trapHandler();
-    void initSDL();
-    void openAudio();
-    
 private:
-    enum { DISPLAY_MODE_NORMAL  = 0, 
-           DISPLAY_MODE_TEXT    = 1
-    };
-    enum { IDLE_EVENT_MODE      = 0,
-           WAIT_RCLICK_MODE     = 1, // for lrclick
-           WAIT_BUTTON_MODE     = 2, // For select, btnwait and rmenu.
-           WAIT_INPUT_MODE      = (4|8),  // can be skipped by a click
-           WAIT_TIMER_MODE      = 32,
-           WAIT_VOICE_MODE      = 128,
-           WAIT_TEXT_MODE       = 256 // clickwait, newpage, select
-    };
-    enum { ALPHA_BLEND_CONST          = 1,
-           ALPHA_BLEND_MULTIPLE       = 2,
-           ALPHA_BLEND_FADE_MASK      = 3,
-           ALPHA_BLEND_CROSSFADE_MASK = 4
-    };
-
     // ----------------------------------------
+    // global variables and methods
+    enum { IDLE_EVENT_MODE  = 0,
+           WAIT_RCLICK_MODE = 1, // for lrclick
+           WAIT_BUTTON_MODE = 2, // For select, btnwait and rmenu.
+           WAIT_INPUT_MODE  = (4|8),  // can be skipped by a click
+           WAIT_TIMER_MODE  = 32,
+           WAIT_VOICE_MODE  = 128,
+           WAIT_TEXT_MODE   = 256 // clickwait, newpage, select
+    };
+    int  event_mode;
+
+    bool is_script_read;
+    char *wm_title_string;
+    char *wm_icon_string;
+    char wm_edit_string[256];
+    bool fullscreen_mode;
+    bool window_mode;
+
     // start-up options
     bool cdaudio_flag;
     char *default_font;
@@ -342,35 +303,15 @@ private:
     bool edit_flag;
     char *key_exe_file;
 
-    // ----------------------------------------
-    // Global definitions
-    long internal_timer;
-    bool automode_flag;
-    long automode_time;
-    long autoclick_time;
+    // variables relevant to button
+    struct ButtonState{
+        int x, y, button;
+        char str[16];
+        bool down_flag;
+    } current_button_state, last_mouse_state;
 
-    bool saveon_flag;
-    bool internal_saveon_flag; // to saveoff at the head of text
-
-    bool monocro_flag;
-    uchar3 monocro_color;
-    uchar3 monocro_color_lut[256];
-    int  nega_mode;
-
-    enum { TRAP_NONE        = 0,
-           TRAP_LEFT_CLICK  = 1,
-           TRAP_RIGHT_CLICK = 2,
-           TRAP_NEXT_SELECT = 4,
-           TRAP_STOP        = 8,
-           TRAP_CLICKED     = 16
-    };
-    int  trap_mode;
-    char *trap_dist;
-    char *wm_title_string;
-    char *wm_icon_string;
-    char wm_edit_string[256];
-    bool fullscreen_mode;
-    bool window_mode;
+    ButtonLink root_button_link, *current_button_link, exbtn_d_button_link;
+    bool is_exbtn_enabled;
 
     bool btntime2_flag;
     long btntime_value;
@@ -379,10 +320,188 @@ private:
     bool btndown_flag;
     bool transbtn_flag;
 
-    void quit();
+    int current_over_button;
+    int shift_over_button;
 
-    /* ---------------------------------------- */
-    /* variables relevant to script */
+    bool bexec_flag;
+    bool getzxc_flag;
+    bool gettab_flag;
+    bool getpageup_flag;
+    bool getpagedown_flag;
+    bool getinsert_flag;
+    bool getfunction_flag;
+    bool getenter_flag;
+    bool getcursor_flag;
+    bool spclclk_flag;
+
+    bool getmouseover_flag;
+    int  getmouseover_lower;
+    int  getmouseover_upper;
+
+    // variables relevant to selection
+    enum { SELECT_GOTO_MODE  = 0, 
+           SELECT_GOSUB_MODE = 1, 
+           SELECT_NUM_MODE   = 2, 
+           SELECT_CSEL_MODE  = 3 
+    };
+    struct SelectLink{
+        SelectLink *next;
+        char *text;
+        char *label;
+
+        SelectLink(){
+            next = NULL;
+            text = label = NULL;
+        };
+
+        ~SelectLink(){
+            if ( text )  delete[] text;
+            if ( label ) delete[] label;
+        };
+    } root_select_link;
+    NestInfo select_label_info;
+    int  shortcut_mouse_line;
+
+    void initSDL();
+    void openAudio();
+    void reset(); // called on definereset
+    void resetSub(); // called on reset
+    void resetSentenceFont();
+    void flush( int refresh_mode, SDL_Rect *rect=NULL, bool clear_dirty_flag=true, bool direct_flag=false );
+    void flushDirect( SDL_Rect &rect, int refresh_mode );
+    void mouseOverCheck( int x, int y );
+public:
+    void executeLabel();
+    void runScript();
+private:
+    int  parseLine();
+    void deleteButtonLink();
+    void refreshMouseOverButton();
+    void deleteSelectLink();
+    void clearCurrentPage();
+    void shadowTextDisplay( SDL_Surface *surface, SDL_Rect &clip );
+    void newPage();
+    ButtonLink *getSelectableSentence( char *buffer, FontInfo *info, bool flush_flag = true, bool nofile_flag = false );
+    void decodeExbtnControl( const char *ctl_str, SDL_Rect *check_src_rect=NULL, SDL_Rect *check_dst_rect=NULL );
+    void saveAll();
+    void loadEnvData();
+    void saveEnvData();
+    int  refreshMode();
+    void quit();
+    void disableGetButtonFlag();
+    int  getNumberFromBuffer( const char **buf );
+
+    // ----------------------------------------
+    // variables and methods relevant to animation
+    enum { ALPHA_BLEND_CONST          = 1,
+           ALPHA_BLEND_MULTIPLE       = 2,
+           ALPHA_BLEND_FADE_MASK      = 3,
+           ALPHA_BLEND_CROSSFADE_MASK = 4
+    };
+
+    AnimationInfo btndef_info, bg_info, cursor_info[2];
+    AnimationInfo tachi_info[3]; // 0 ... left, 1 ... center, 2 ... right
+    AnimationInfo *sprite_info, *sprite2_info;
+    AnimationInfo *bar_info[MAX_PARAM_NUM], *prnum_info[MAX_PARAM_NUM];
+    AnimationInfo lookback_info[4];
+    AnimationInfo dialog_info;
+
+    int  human_order[3];
+    bool all_sprite_hide_flag;
+    bool all_sprite2_hide_flag;
+    bool show_dialog_flag;
+    
+    int  calcDurationToNextAnimation();
+    void stepAnimation(int t);
+    void proceedAnimation();
+    void setupAnimationInfo(AnimationInfo *anim, FontInfo *info=NULL);
+    void parseTaggedString(AnimationInfo *anim );
+    void drawTaggedSurface(SDL_Surface *dst_surface, AnimationInfo *anim, SDL_Rect &clip);
+    void stopAnimation(int click);
+    void loadCursor(int no, const char *str, int x, int y, bool abs_flag = false);
+
+    // ----------------------------------------
+    // variables and methods relevant to effect
+    DirtyRect dirty_rect; // only this region is updated
+    int  effect_counter, effect_duration; // counter in each effect
+    int  effect_timer_resolution;
+    int  effect_start_time;
+    int  effect_start_time_old;
+    
+    bool setEffect( EffectLink *effect, bool generate_effect_dst, bool update_backup_surface );
+    bool doEffect( EffectLink *effect, bool clear_dirty_region=true );
+    void drawEffect( SDL_Rect *dst_rect, SDL_Rect *src_rect, SDL_Surface *surface );
+    void generateMosaic( SDL_Surface *src_surface, int level );
+    
+    struct BreakupCell {
+        int cell_x, cell_y;
+        int dir;
+        int state;
+        int radius;
+        BreakupCell(): cell_x(0), cell_y(0),
+                       dir(0), state(0), radius(0){}
+    } *breakup_cells;
+    bool *breakup_cellforms, *breakup_mask;
+    void buildBreakupCellforms();
+    void buildBreakupMask();
+    void initBreakup( char *params );
+    void effectBreakup( char *params, int duration );
+
+    // ----------------------------------------
+    // variables and methods relevant to event
+    enum { NOT_EDIT_MODE            = 0,
+           EDIT_SELECT_MODE         = 1,
+           EDIT_VARIABLE_INDEX_MODE = 2,
+           EDIT_VARIABLE_NUM_MODE   = 3,
+           EDIT_MP3_VOLUME_MODE     = 4,
+           EDIT_VOICE_VOLUME_MODE   = 5,
+           EDIT_SE_VOLUME_MODE      = 6
+    };
+    
+    int  remaining_time;
+    int  variable_edit_mode;
+    int  variable_edit_index;
+    int  variable_edit_num;
+    int  variable_edit_sign;
+    int  shift_pressed_status;
+    int  ctrl_pressed_status;
+    int  num_fingers; // numbur of fingers touching on the screen
+    
+    void flushEventSub( SDL_Event &event );
+    void flushEvent();
+    void removeEvent(int type);
+    void removeBGMFadeEvent();
+    void waitEventSub(int count);
+    bool waitEvent(int count);
+    bool trapHandler();
+    bool mouseMoveEvent( SDL_MouseMotionEvent *event );
+    bool mousePressEvent( SDL_MouseButtonEvent *event );
+    void variableEditMode( SDL_KeyboardEvent *event );
+    void shiftCursorOnButton( int diff );
+    bool keyDownEvent( SDL_KeyboardEvent *event );
+    void keyUpEvent( SDL_KeyboardEvent *event );
+    bool keyPressEvent( SDL_KeyboardEvent *event );
+    void timerEvent();
+    void runEventLoop();
+
+    // ----------------------------------------
+    // variables and methods relevant to file/file2
+    void searchSaveFile( SaveFileInfo &info, int no );
+    char *readSaveStrFromFile( int no );
+    int  loadSaveFile( int no );
+    void saveMagicNumber( bool output_flag );
+    int  saveSaveFile( int no, const char *savestr=NULL );
+
+    int  loadSaveFile2( int file_version );
+    void saveSaveFile2( bool output_flag );
+    
+    // ----------------------------------------
+    // variables and methods relevant to image
+    bool monocro_flag;
+    uchar3 monocro_color;
+    uchar3 monocro_color_lut[256];
+    int  nega_mode;
+
     enum { REFRESH_NONE_MODE        = 0,
            REFRESH_NORMAL_MODE      = 1,
            REFRESH_SAYA_MODE        = 2,
@@ -390,11 +509,8 @@ private:
            REFRESH_TEXT_MODE        = 8,
            REFRESH_CURSOR_MODE      = 16
     };
+    int  refresh_shadow_text_mode;
 
-    bool is_script_read;
-    int refresh_shadow_text_mode;
-    int display_mode;
-    int event_mode;
 #ifdef USE_SDL_RENDERER
     SDL_Window *window;
     SDL_Renderer *renderer;
@@ -417,217 +533,57 @@ private:
     unsigned long tmp_image_buf_length;
     unsigned long mean_size_of_loaded_images;
     unsigned long num_loaded_images;
-    
-    /* ---------------------------------------- */
-    /* variables relevant to button */
-    AnimationInfo btndef_info;
 
-    struct ButtonState{
-        int x, y, button;
-        char str[16];
-        bool down_flag;
-    } current_button_state, last_mouse_state, shelter_mouse_state;
+    unsigned char *resize_buffer;
+    size_t resize_buffer_size;
 
-    struct ButtonLink{
-        typedef enum { NORMAL_BUTTON     = 0,
-                       SPRITE_BUTTON     = 1,
-                       LOOKBACK_BUTTON   = 2,
-                       TMP_SPRITE_BUTTON = 3
-        } BUTTON_TYPE;
+    SDL_Surface *loadImage(char *filename, bool *has_alpha=NULL, int *location=NULL);
+    SDL_Surface *createRectangleSurface(char *filename, bool *has_alpha);
+    SDL_Surface *createSurfaceFromFile(char *filename,bool *has_alpha, int *location);
 
-        struct ButtonLink *next;
-        BUTTON_TYPE button_type;
-        int no;
-        int sprite_no;
-        char *exbtn_ctl[3];
-        SDL_Rect select_rect;
-        SDL_Rect image_rect;
-        AnimationInfo *anim[2];
-        int show_flag; // 0...show nothing, 1... show anim[0], 2 ... show anim[1]
-
-        ButtonLink(){
-            button_type = NORMAL_BUTTON;
-            next = NULL;
-            exbtn_ctl[0] = exbtn_ctl[1] = exbtn_ctl[2] = NULL;
-            anim[0] = anim[1] = NULL;
-            show_flag = 0;
-        };
-        ~ButtonLink(){
-            if ((button_type == NORMAL_BUTTON ||
-                 button_type == TMP_SPRITE_BUTTON) && anim[0]) delete anim[0];
-            for (int i=0 ; i<3 ; i++)
-                if ( exbtn_ctl[i] ) delete[] exbtn_ctl[i];
-        };
-        void insert( ButtonLink *button ){
-            button->next = this->next;
-            this->next = button;
-        };
-        void removeSprite( int no ){
-            ButtonLink *p = this;
-            while(p->next){
-                if ( p->next->sprite_no == no &&
-                     p->next->button_type == SPRITE_BUTTON ){
-                    ButtonLink *p2 = p->next;
-                    p->next = p->next->next;
-                    delete p2;
-                }
-                else{
-                    p = p->next;
-                }
-            }
-        };
-    } root_button_link, *current_button_link, *shelter_button_link, exbtn_d_button_link;
-    bool is_exbtn_enabled;
-
-    int current_over_button;
-    int shift_over_button;
-
-    bool bexec_flag;
-    bool getzxc_flag;
-    bool gettab_flag;
-    bool getpageup_flag;
-    bool getpagedown_flag;
-    bool getinsert_flag;
-    bool getfunction_flag;
-    bool getenter_flag;
-    bool getcursor_flag;
-    bool spclclk_flag;
-
-    bool getmouseover_flag;
-    int  getmouseover_lower;
-    int  getmouseover_upper;
-
-    void resetSentenceFont();
-    void deleteButtonLink();
-    void refreshMouseOverButton();
+    int  resizeSurface( SDL_Surface *src, SDL_Surface *dst );
+    void alphaBlend( SDL_Surface *mask_surface,
+                     int trans_mode, Uint32 mask_value = 255, SDL_Rect *clip=NULL );
+    void alphaBlendText( SDL_Surface *dst_surface, SDL_Rect dst_rect,
+                         SDL_Surface *src_surface, SDL_Color &color, SDL_Rect *clip, bool rotate_flag );
+    void makeNegaSurface( SDL_Surface *surface, SDL_Rect &clip );
+    void makeMonochromeSurface( SDL_Surface *surface, SDL_Rect &clip );
+    void refreshSurface( SDL_Surface *surface, SDL_Rect *clip_src, int refresh_mode = REFRESH_NORMAL_MODE );
     void refreshSprite( int sprite_no, bool active_flag, int cell_no, SDL_Rect *check_src_rect, SDL_Rect *check_dst_rect );
+    void createBackground();
 
-    void decodeExbtnControl( const char *ctl_str, SDL_Rect *check_src_rect=NULL, SDL_Rect *check_dst_rect=NULL );
-    
-    void disableGetButtonFlag();
-    int getNumberFromBuffer( const char **buf );
-    
-    /* ---------------------------------------- */
-    /* variables relevant to animation */
-    AnimationInfo bg_info, cursor_info[2];
-    AnimationInfo tachi_info[3]; // 0 ... left, 1 ... center, 2 ... right
-    AnimationInfo *sprite_info, *sprite2_info;
-    AnimationInfo *bar_info[MAX_PARAM_NUM], *prnum_info[MAX_PARAM_NUM];
-    AnimationInfo lookback_info[4];
-    AnimationInfo dialog_info;
+    // ----------------------------------------
+    // variables and methods relevant to rmenu
+    bool system_menu_enter_flag;
+    int  system_menu_mode;
 
-    int human_order[3];
-    bool all_sprite_hide_flag;
-    bool all_sprite2_hide_flag;
-    bool show_dialog_flag;
+    int  shelter_event_mode;
+    int  shelter_display_mode;
+    bool shelter_draw_cursor_flag;
+    Page *cached_page;
+    ButtonLink *shelter_button_link;
+    SelectLink *shelter_select_link;
+    ButtonState shelter_mouse_state;
     
-    int  calcDurationToNextAnimation();
-    void stepAnimation(int t);
-    void proceedAnimation();
-    void setupAnimationInfo(AnimationInfo *anim, FontInfo *info=NULL);
-    void parseTaggedString(AnimationInfo *anim );
-    void drawTaggedSurface(SDL_Surface *dst_surface, AnimationInfo *anim, SDL_Rect &clip);
-    void stopAnimation(int click);
-    void loadCursor(int no, const char *str, int x, int y, bool abs_flag = false);
+    void enterSystemCall();
+    void leaveSystemCall( bool restore_flag = true );
+    int  executeSystemCall();
+    
+    void executeSystemMenu();
+    void executeSystemSkip();
+    void executeSystemAutomode();
+    bool executeSystemReset();
+    void executeSystemEnd();
+    void executeWindowErase();
+    bool executeSystemLoad();
+    void executeSystemSave();
+    bool executeSystemYesNo( int caller, int file_no=0 );
+    void setupLookbackButton();
+    void executeSystemLookback();
+    void buildDialog(bool yesno_flag, const char *mes1, const char *mes2);
 
-    void saveAll();
-    void loadEnvData();
-    void saveEnvData();
-    
-    /* ---------------------------------------- */
-    /* variables relevant to text */
-    bool is_kinsoku;
-    AnimationInfo text_info;
-    AnimationInfo sentence_font_info;
-    char *font_file;
-    int erase_text_window_mode;
-    bool text_on_flag; // suppress the effect of erase_text_window_mode
-    bool draw_cursor_flag;
-    int  textgosub_clickstr_state;
-    int  indent_offset;
-
-    int refreshMode();
-    void setwindowCore();
-    
-    void shiftHalfPixelX(SDL_Surface *surface);
-    void shiftHalfPixelY(SDL_Surface *surface);
-    void drawGlyph( SDL_Surface *dst_surface, FontInfo *info, SDL_Color &color, char *text, int xy[2], bool shadow_flag, AnimationInfo *cache_info, SDL_Rect *clip, SDL_Rect &dst_rect );
-    void drawChar( char* text, FontInfo *info, bool flush_flag, bool lookback_flag, SDL_Surface *surface, AnimationInfo *cache_info, SDL_Rect *clip=NULL );
-    void drawString( const char *str, uchar3 color, FontInfo *info, bool flush_flag, SDL_Surface *surface, SDL_Rect *rect = NULL, AnimationInfo *cache_info=NULL );
-    void restoreTextBuffer(SDL_Surface *surface = NULL);
-    void enterTextDisplayMode(bool text_flag = true);
-    void leaveTextDisplayMode(bool force_leave_flag = false);
-    bool doClickEnd();
-    bool clickWait( char *out_text );
-    bool clickNewPage( char *out_text );
-    void startRuby(const char *buf, FontInfo &info);
-    void endRuby(bool flush_flag, bool lookback_flag, SDL_Surface *surface, AnimationInfo *cache_info);
-    int  textCommand();
-    bool checkLineBreak(const char *buf, FontInfo *fi);
-    void processEOT();
-    bool processText();
-    
-    /* ---------------------------------------- */
-    /* Skip mode */
-    enum { SKIP_NONE   = 0,
-           SKIP_NORMAL = 1, // skip endlessly (press 's' button)
-           SKIP_TO_EOL = 2, // skip to end of line
-           SKIP_TO_EOP = 4  // skip to end of page (press 'o' button)
-    };
-    int skip_mode;
-
-    /* ---------------------------------------- */
-    /* variables relevant to effect */
-    DirtyRect dirty_rect; // only this region is updated
-    int effect_counter, effect_duration; // counter in each effect
-    int effect_timer_resolution;
-    int effect_start_time;
-    int effect_start_time_old;
-    
-    bool setEffect( EffectLink *effect, bool generate_effect_dst, bool update_backup_surface );
-    bool doEffect( EffectLink *effect, bool clear_dirty_region=true );
-    void drawEffect( SDL_Rect *dst_rect, SDL_Rect *src_rect, SDL_Surface *surface );
-    void generateMosaic( SDL_Surface *src_surface, int level );
-    
-    struct BreakupCell {
-        int cell_x, cell_y;
-        int dir;
-        int state;
-        int radius;
-        BreakupCell(): cell_x(0), cell_y(0),
-                       dir(0), state(0), radius(0){}
-    } *breakup_cells;
-    bool *breakup_cellforms, *breakup_mask;
-    void buildBreakupCellforms();
-    void buildBreakupMask();
-    void initBreakup( char *params );
-    void effectBreakup( char *params, int duration );
-
-    /* ---------------------------------------- */
-    /* variables relevant to selection */
-    enum { SELECT_GOTO_MODE=0, SELECT_GOSUB_MODE=1, SELECT_NUM_MODE=2, SELECT_CSEL_MODE=3 };
-    struct SelectLink{
-        struct SelectLink *next;
-        char *text;
-        char *label;
-
-        SelectLink(){
-            next = NULL;
-            text = label = NULL;
-        };
-        ~SelectLink(){
-            if ( text )  delete[] text;
-            if ( label ) delete[] label;
-        };
-    } root_select_link, *shelter_select_link;
-    struct NestInfo select_label_info;
-    int shortcut_mouse_line;
-
-    void deleteSelectLink();
-    struct ButtonLink *getSelectableSentence( char *buffer, FontInfo *info, bool flush_flag = true, bool nofile_flag = false );
-    
-    /* ---------------------------------------- */
-    /* variables relevant to sound */
+    // ----------------------------------------
+    // variables and methods relevant to sound
     enum{
         SOUND_NONE    =  0,
         SOUND_PRELOAD =  1,
@@ -687,83 +643,69 @@ private:
     void stopAllDWAVE();
     void playClickVoice();
     
-    /* ---------------------------------------- */
-    /* variables relevant to text event */
+    // ----------------------------------------
+    // variables and methods relevant to text
+    enum { DISPLAY_MODE_NORMAL  = 0, 
+           DISPLAY_MODE_TEXT    = 1
+    };
+    int  display_mode;
+
+    enum { SKIP_NONE   = 0,
+           SKIP_NORMAL = 1, // skip endlessly (press 's' button)
+           SKIP_TO_EOL = 2, // skip to end of line
+           SKIP_TO_EOP = 4  // skip to end of page (press 'o' button)
+    };
+    int  skip_mode;
+
+    enum { TRAP_NONE        = 0,
+           TRAP_LEFT_CLICK  = 1,
+           TRAP_RIGHT_CLICK = 2,
+           TRAP_NEXT_SELECT = 4,
+           TRAP_STOP        = 8,
+           TRAP_CLICKED     = 16
+    };
+    int  trap_mode;
+    char *trap_dist;
+
+    long internal_timer;
+    bool automode_flag;
+    long automode_time;
+    long autoclick_time;
+
+    bool saveon_flag;
+    bool internal_saveon_flag; // to saveoff at the head of text
+
     bool new_line_skip_flag;
-    int text_speed_no;
-    int num_fingers; // numbur of fingers touching on the screen
+    int  text_speed_no;
+    bool is_kinsoku;
+    AnimationInfo text_info;
+    AnimationInfo sentence_font_info;
+    char *font_file;
+    int erase_text_window_mode;
+    bool text_on_flag; // suppress the effect of erase_text_window_mode
+    bool draw_cursor_flag;
+    int  textgosub_clickstr_state;
+    int  indent_offset;
 
-    void shadowTextDisplay( SDL_Surface *surface, SDL_Rect &clip );
-    void clearCurrentPage();
-    void newPage();
+    void setwindowCore();
     
-    void flush( int refresh_mode, SDL_Rect *rect=NULL, bool clear_dirty_flag=true, bool direct_flag=false );
-    void flushDirect( SDL_Rect &rect, int refresh_mode );
-public:
-    void executeLabel();
-    void runScript();
-private:
-    int parseLine();
-
-    void mouseOverCheck( int x, int y );
-    
-    /* ---------------------------------------- */
-    /* File I/O */
-    void searchSaveFile( SaveFileInfo &info, int no );
-    char *readSaveStrFromFile( int no );
-    int  loadSaveFile( int no );
-    void saveMagicNumber( bool output_flag );
-    int  saveSaveFile( int no, const char *savestr=NULL );
-
-    int  loadSaveFile2( int file_version );
-    void saveSaveFile2( bool output_flag );
-    
-    /* ---------------------------------------- */
-    /* Image processing */
-    unsigned char *resize_buffer;
-    size_t resize_buffer_size;
-
-    SDL_Surface *loadImage(char *filename, bool *has_alpha=NULL, int *location=NULL);
-    SDL_Surface *createRectangleSurface(char *filename, bool *has_alpha);
-    SDL_Surface *createSurfaceFromFile(char *filename,bool *has_alpha, int *location);
-
-    int  resizeSurface( SDL_Surface *src, SDL_Surface *dst );
-    void shiftCursorOnButton( int diff );
-    void alphaBlend( SDL_Surface *mask_surface,
-                     int trans_mode, Uint32 mask_value = 255, SDL_Rect *clip=NULL );
-    void alphaBlendText( SDL_Surface *dst_surface, SDL_Rect dst_rect,
-                         SDL_Surface *src_surface, SDL_Color &color, SDL_Rect *clip, bool rotate_flag );
-    void makeNegaSurface( SDL_Surface *surface, SDL_Rect &clip );
-    void makeMonochromeSurface( SDL_Surface *surface, SDL_Rect &clip );
-    void refreshSurface( SDL_Surface *surface, SDL_Rect *clip_src, int refresh_mode = REFRESH_NORMAL_MODE );
-    void createBackground();
-
-    /* ---------------------------------------- */
-    /* rmenu and system call */
-    bool system_menu_enter_flag;
-    int  system_menu_mode;
-
-    int  shelter_event_mode;
-    int  shelter_display_mode;
-    bool shelter_draw_cursor_flag;
-    struct Page *cached_page;
-    
-    void enterSystemCall();
-    void leaveSystemCall( bool restore_flag = true );
-    int  executeSystemCall();
-    
-    void executeSystemMenu();
-    void executeSystemSkip();
-    void executeSystemAutomode();
-    bool executeSystemReset();
-    void executeSystemEnd();
-    void executeWindowErase();
-    bool executeSystemLoad();
-    void executeSystemSave();
-    bool executeSystemYesNo( int caller, int file_no=0 );
-    void setupLookbackButton();
-    void executeSystemLookback();
-    void buildDialog(bool yesno_flag, const char *mes1, const char *mes2);
+    void shiftHalfPixelX(SDL_Surface *surface);
+    void shiftHalfPixelY(SDL_Surface *surface);
+    void drawGlyph( SDL_Surface *dst_surface, FontInfo *info, SDL_Color &color, char *text, int xy[2], bool shadow_flag, AnimationInfo *cache_info, SDL_Rect *clip, SDL_Rect &dst_rect );
+    void drawChar( char* text, FontInfo *info, bool flush_flag, bool lookback_flag, SDL_Surface *surface, AnimationInfo *cache_info, SDL_Rect *clip=NULL );
+    void drawString( const char *str, uchar3 color, FontInfo *info, bool flush_flag, SDL_Surface *surface, SDL_Rect *rect = NULL, AnimationInfo *cache_info=NULL );
+    void restoreTextBuffer(SDL_Surface *surface = NULL);
+    void enterTextDisplayMode(bool text_flag = true);
+    void leaveTextDisplayMode(bool force_leave_flag = false);
+    bool doClickEnd();
+    bool clickWait( char *out_text );
+    bool clickNewPage( char *out_text );
+    void startRuby(const char *buf, FontInfo &info);
+    void endRuby(bool flush_flag, bool lookback_flag, SDL_Surface *surface, AnimationInfo *cache_info);
+    int  textCommand();
+    bool checkLineBreak(const char *buf, FontInfo *fi);
+    void processEOT();
+    bool processText();
 };
 
-#endif // __ONSCRIPTER_LABEL_H__
+#endif // __ONSCRIPTER_H__

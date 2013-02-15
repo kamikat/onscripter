@@ -2,7 +2,7 @@
  *
  *  ONScripter_file2.cpp - FILE I/O of ONScripter
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -297,6 +297,8 @@ int ONScripter::loadSaveFile2( int file_version )
             ai->scalePosXY( screen_ratio1, screen_ratio2 );
             ai->font_size_xy[0] = readInt();
             ai->font_size_xy[1] = readInt();
+            ai->font_pitch[0] = ai->font_size_xy[0];
+            ai->font_pitch[1] = ai->font_size_xy[1];
             for ( j=0 ; j<3 ; j++ )
                 ai->color_list[0][2-j] = readChar();
             readChar(); // 0x00

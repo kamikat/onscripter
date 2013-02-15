@@ -100,7 +100,7 @@ public:
     int cos_i, sin_i;
 
     int font_size_xy[2]; // used by prnum and lsp string
-    int font_pitch; // used by lsp string
+    int font_pitch[2]; // used by lsp string
     int remaining_time;
 
     int param; // used by prnum and bar

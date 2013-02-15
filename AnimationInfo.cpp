@@ -109,7 +109,7 @@ void AnimationInfo::reset()
     blending_mode = BLEND_NORMAL;
 
     font_size_xy[0] = font_size_xy[1] = -1;
-    font_pitch = -1;
+    font_pitch[0] = font_pitch[1] = -1;
 
     mat[0][0] = 1024;
     mat[0][1] = 0;

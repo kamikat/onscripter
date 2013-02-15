@@ -354,6 +354,7 @@ int ONScripter::strspCommand()
 
     int sprite_no = script_h.readInt();
     AnimationInfo *ai = &sprite_info[sprite_no];
+    ai->font_size_xy[0] = -1;
 
     if (ai->image_surface && ai->visible)
         dirty_rect.add( ai->pos );
@@ -1159,6 +1160,8 @@ int ONScripter::prnumCommand()
     ai->scalePosXY( screen_ratio1, screen_ratio2 );
     ai->font_size_xy[0] = script_h.readInt();
     ai->font_size_xy[1] = script_h.readInt();
+    ai->font_pitch[0] = ai->font_size_xy[0];
+    ai->font_pitch[1] = ai->font_size_xy[1];
 
     const char *buf = script_h.readStr();
     readColor( &ai->color_list[0], buf );
@@ -1710,13 +1713,14 @@ int ONScripter::logspCommand()
     if (logsp2_flag){
         ai->font_size_xy[0] = script_h.readInt();
         ai->font_size_xy[1] = script_h.readInt();
-        ai->font_pitch = script_h.readInt() + ai->font_size_xy[0];
-        script_h.readInt(); // dummy read for y pitch
+        ai->font_pitch[0] = script_h.readInt() + ai->font_size_xy[0];
+        ai->font_pitch[1] = script_h.readInt() + ai->font_size_xy[1];
     }
     else{
         ai->font_size_xy[0] = sentence_font.font_size_xy[0];
         ai->font_size_xy[1] = sentence_font.font_size_xy[1];
-        ai->font_pitch = sentence_font.pitch_xy[0];
+        ai->font_pitch[0] = sentence_font.pitch_xy[0];
+        ai->font_pitch[1] = sentence_font.pitch_xy[1];
     }
     
     char *current = script_h.getNext();
