@@ -652,8 +652,6 @@ void ONScripter::buildDialog(bool yesno_flag, const char *mes1, const char *mes2
     SDL_PixelFormat *fmt = image_surface->format;
     SDL_Surface *s = SDL_CreateRGBSurface( SDL_SWSURFACE, DIALOG_W, DIALOG_H,
                                            fmt->BitsPerPixel, fmt->Rmask, fmt->Gmask, fmt->Bmask, fmt->Amask );
-    SDL_Surface *s2 = SDL_CreateRGBSurface( SDL_SWSURFACE, DIALOG_W*screen_ratio1/screen_ratio2, DIALOG_H*screen_ratio1/screen_ratio2,
-                                           fmt->BitsPerPixel, fmt->Rmask, fmt->Gmask, fmt->Bmask, fmt->Amask );
 
     SDL_Rect rect;
     unsigned char col = 255;
@@ -708,11 +706,17 @@ void ONScripter::buildDialog(bool yesno_flag, const char *mes1, const char *mes2
         SDL_FillRect(s, &rect, SDL_MapRGBA(s->format, col, col, col, 0xff));
     }
 
-    resizeSurface(s, s2);
+    SDL_Surface *s2 = s;
+    if (screen_ratio2 != screen_ratio1){
+        s2 = SDL_CreateRGBSurface( SDL_SWSURFACE, DIALOG_W*screen_ratio1/screen_ratio2, DIALOG_H*screen_ratio1/screen_ratio2,
+                                   fmt->BitsPerPixel, fmt->Rmask, fmt->Gmask, fmt->Bmask, fmt->Amask );
+        resizeSurface(s, s2);
+        SDL_FreeSurface(s);
+    }
+    
+    dialog_info.deleteSurface();
     dialog_info.num_of_cells = 1;
     dialog_info.setImage(s2, texture_format);
-
-    SDL_FreeSurface(s);
     
     dialog_info.pos.x = (screen_width  - dialog_info.pos.w)/2;
     dialog_info.pos.y = (screen_height - dialog_info.pos.h)/2;

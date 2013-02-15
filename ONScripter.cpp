@@ -729,8 +729,8 @@ void ONScripter::mouseOverCheck( int x, int y )
 
         SDL_Rect check_src_rect = {0, 0, 0, 0};
         SDL_Rect check_dst_rect = {0, 0, 0, 0};
-        ButtonLink *cbl = current_button_link;
         if ( current_over_button != 0 ){
+            ButtonLink *cbl = current_button_link;
             cbl->show_flag = 0;
             check_src_rect = cbl->image_rect;
             if ( cbl->button_type == ButtonLink::SPRITE_BUTTON ){
@@ -927,6 +927,7 @@ void ONScripter::deleteButtonLink()
     while( b1 ){
         ButtonLink *b2 = b1;
         b1 = b1->next;
+        if (b2 == current_button_link) current_over_button = 0;
         delete b2;
     }
     root_button_link.next = NULL;

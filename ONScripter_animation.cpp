@@ -142,17 +142,12 @@ void ONScripter::setupAnimationInfo( AnimationInfo *anim, FontInfo *info )
     anim->deleteSurface();
     anim->abs_flag = true;
 
-    if ( anim->surface_name ) delete[] anim->surface_name;
     anim->surface_name = new char[ strlen(anim->file_name) + 1 ];
     strcpy( anim->surface_name, anim->file_name );
 
-    if (anim->mask_surface_name) delete[] anim->mask_surface_name;
     if (anim->mask_file_name){
         anim->mask_surface_name = new char[ strlen(anim->mask_file_name) + 1 ];
         strcpy( anim->mask_surface_name, anim->mask_file_name );
-    }
-    else{
-        anim->mask_surface_name = NULL;
     }
     
     if ( anim->trans_mode == AnimationInfo::TRANS_STRING ){

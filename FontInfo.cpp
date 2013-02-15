@@ -232,7 +232,7 @@ SDL_Rect FontInfo::calcUpdatedArea(int start_xy[2], int ratio1, int ratio2)
         }
         rect.y = top_xy[1] + start_xy[1]*pitch_xy[1]/2;
         rect.h = pitch_xy[1]*(xy[1]-start_xy[1]+2)/2;
-        if (ttf_font) rect.h += font_size_xy[1] - TTF_FontAscent((TTF_Font*)ttf_font[0])*ratio2/ratio1;
+        if (ttf_font[0]) rect.h += font_size_xy[1] - TTF_FontAscent((TTF_Font*)ttf_font[0])*ratio2/ratio1;
         if (rubyon_flag) rect.h += pitch_xy[1] - font_size_xy[1];
     }
     else{
@@ -255,20 +255,9 @@ SDL_Rect FontInfo::calcUpdatedArea(int start_xy[2], int ratio1, int ratio2)
 
 void FontInfo::addShadeArea(SDL_Rect &rect, int dx, int dy, int dw, int dh)
 {
-    if (dx > 0)
-        rect.w += dx;
-    else{
-        rect.x += dx;
-        rect.w -= dx;
-    }
+    rect.x += dx;
+    rect.y += dy;
     rect.w += dw;
-
-    if (dy > 0)
-        rect.h += dy;
-    else{
-        rect.y += dy;
-        rect.h -= dy;
-    }
     rect.h += dh;
 }
 
