@@ -1056,7 +1056,9 @@ int ONScripter::resetCommand()
     resetSub();
     mp3fadeout_duration = fadeout;
 
+    start_page = current_page = &page_list[0];
     clearCurrentPage();
+    flush( refreshMode(), &sentence_font_info.pos );
     
     setCurrentLabel( "start" );
     saveSaveFile(-1);

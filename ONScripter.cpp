@@ -478,6 +478,9 @@ int ONScripter::init()
     for (i=0 ; i<MAX_PARAM_NUM ; i++) bar_info[i] = prnum_info[i] = NULL;
 
     defineresetCommand();
+    if ( loadFileIOBuf( "gloval.sav" ) > 0 )
+        readVariables( script_h.global_variable_border, script_h.variable_range );
+
 #ifdef USE_LUA
     lua_handler.init(this, &script_h);
 #endif    
@@ -551,12 +554,6 @@ void ONScripter::reset()
     current_cd_track = -1;
     
     resetSub();
-
-    /* ---------------------------------------- */
-    /* Load global variables if available */
-    if ( loadFileIOBuf( "gloval.sav" ) > 0 ||
-         loadFileIOBuf( "global.sav" ) > 0 )
-        readVariables( script_h.global_variable_border, script_h.variable_range );
 }
 
 void ONScripter::resetSub()
