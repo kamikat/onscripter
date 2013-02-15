@@ -1020,9 +1020,11 @@ void ONScripter::timerEvent()
             remaining_time = 0;
         }
         stepAnimation(duration);
+        if (timer_id) SDL_RemoveTimer(timer_id);
         timer_id = SDL_AddTimer(duration, timerCallback, NULL);
     }
     else if (remaining_time > 0){
+        if (timer_id) SDL_RemoveTimer(timer_id);
         timer_id = SDL_AddTimer(remaining_time, timerCallback, NULL);
         remaining_time = 0;
     }
