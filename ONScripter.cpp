@@ -65,8 +65,10 @@ void ONScripter::initSDL()
     }
 #endif
 
+#if !defined(IOS)
     if(SDL_InitSubSystem( SDL_INIT_JOYSTICK ) == 0 && SDL_JoystickOpen(0) != NULL)
         printf( "Initialize JOYSTICK\n");
+#endif
     
 #if defined(PSP) || defined(IPODLINUX) || defined(GP2X) || defined(WINCE)
     SDL_ShowCursor(SDL_DISABLE);
