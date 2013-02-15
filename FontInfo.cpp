@@ -2,7 +2,7 @@
  * 
  *  FontInfo.cpp - Font information storage class of ONScripter
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -99,7 +99,11 @@ void *FontInfo::openFont( char *font_file, int ratio1, int ratio2 )
         fclose( fp );
 #if defined(PSP)
         fc->next->rw_ops = SDL_RWFromFile(font_file, "r");
-        fc->next->font = TTF_OpenFontRW( fc->next->rw_ops, SDL_TRUE, font_size * ratio1 / ratio2 );
+        fc->next->font[0] = TTF_OpenFontRW( fc->next->rw_ops, SDL_TRUE, font_size * ratio1 / ratio2 );
+#if (SDL_TTF_MAJOR_VERSION>=2) && (SDL_TTF_MINOR_VERSION>=0) && (SDL_TTF_PATCHLEVEL>=10)
+        fc->next->font[1] = TTF_OpenFontRW( fc->next->rw_ops, SDL_TRUE, font_size * ratio1 / ratio2 );
+        TTF_SetFontOutline(fc->next->font[1], 1);
+#endif
         fc->next->power_resume_number = psp_power_resume_number;
         strcpy(fc->next->name, font_file);
 #else
@@ -231,13 +235,12 @@ SDL_Rect FontInfo::calcUpdatedArea(int start_xy[2], int ratio1, int ratio2)
             rect.w = pitch_xy[0]*num_xy[0];
         }
         rect.y = top_xy[1] + start_xy[1]*pitch_xy[1]/2;
-        rect.h = pitch_xy[1]*(xy[1]-start_xy[1]+2)/2;
-        if (ttf_font) rect.h += font_size_xy[1] - TTF_FontAscent((TTF_Font*)ttf_font[0])*ratio2/ratio1;
+        rect.h = font_size_xy[1] + pitch_xy[1]*(xy[1]-start_xy[1])/2;
         if (rubyon_flag) rect.h += pitch_xy[1] - font_size_xy[1];
     }
     else{
         rect.x = top_xy[0] + pitch_xy[0]*xy[0]/2;
-        rect.w = pitch_xy[0]*(start_xy[0]-xy[0]+2)/2;
+        rect.w = font_size_xy[0] + pitch_xy[0]*(start_xy[0]-xy[0])/2;
         if (rubyon_flag) rect.w += font_size_xy[0]-pitch_xy[0];
         if (start_xy[0] == xy[0]){
             rect.y = top_xy[1] + pitch_xy[1]*start_xy[1]/2;
@@ -255,20 +258,9 @@ SDL_Rect FontInfo::calcUpdatedArea(int start_xy[2], int ratio1, int ratio2)
 
 void FontInfo::addShadeArea(SDL_Rect &rect, int dx, int dy, int dw, int dh)
 {
-    if (dx > 0)
-        rect.w += dx;
-    else{
-        rect.x += dx;
-        rect.w -= dx;
-    }
+    rect.x += dx;
+    rect.y += dy;
     rect.w += dw;
-
-    if (dy > 0)
-        rect.h += dy;
-    else{
-        rect.y += dy;
-        rect.h -= dy;
-    }
     rect.h += dh;
 }
 

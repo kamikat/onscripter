@@ -56,6 +56,7 @@ ONSCRIPTER_OBJS = onscripter_main$(OBJSUFFIX) \
 	$(GUI_OBJS) $(EXT_OBJS)
 
 PARSER_HEADER = BaseReader.h \
+	ButtonLink.h \
 	DirectReader.h \
 	SarReader.h \
 	NsaReader.h \

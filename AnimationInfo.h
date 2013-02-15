@@ -2,7 +2,7 @@
  * 
  *  AnimationInfo.h - General image storage class of ONScripter
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -100,7 +100,7 @@ public:
     int cos_i, sin_i;
 
     int font_size_xy[2]; // used by prnum and lsp string
-    int font_pitch; // used by lsp string
+    int font_pitch[2]; // used by lsp string
     int remaining_time;
 
     int param; // used by prnum and bar
@@ -130,7 +130,8 @@ public:
     void remove();
     void removeTag();
 
-    bool proceedAnimation(int t);
+    void stepAnimation(int t);
+    bool proceedAnimation();
 
     void setCell(int cell);
     static int doClipping( SDL_Rect *dst, SDL_Rect *clip, SDL_Rect *clipped=NULL );

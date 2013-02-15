@@ -2,7 +2,7 @@
  * 
  *  ONScripter_event.cpp - Event handler of ONScripter
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -33,17 +33,16 @@
 #define ONS_MIDI_EVENT    (SDL_USEREVENT+3)
 #define ONS_CHUNK_EVENT   (SDL_USEREVENT+4)
 #define ONS_BREAK_EVENT   (SDL_USEREVENT+5)
+#define ONS_BGMFADE_EVENT (SDL_USEREVENT+6)
 
 // This sets up the fade event flag for use in bgm fadeout and fadein.
 #define BGM_FADEOUT 0
 #define BGM_FADEIN  1
-#define ONS_BGMFADE_EVENT (SDL_USEREVENT+6)
 
 #define EDIT_MODE_PREFIX "[EDIT MODE]  "
 #define EDIT_SELECT_STRING "MP3 vol (m)  SE vol (s)  Voice vol (v)  Numeric variable (n)"
 
 static SDL_TimerID timer_id = NULL;
-static SDL_TimerID break_id = NULL;
 SDL_TimerID timer_cdaudio_id = NULL;
 SDL_TimerID timer_bgmfade_id = NULL;
 
@@ -59,18 +58,6 @@ extern "C" void musicFinishCallback()
     SDL_PushEvent(&event);
 }
 
-extern "C" Uint32 SDLCALL breakCallback(Uint32 interval, void *param)
-{
-    SDL_RemoveTimer(break_id);
-    break_id = NULL;
-
-	SDL_Event event;
-	event.type = ONS_BREAK_EVENT;
-	SDL_PushEvent(&event);
-
-    return interval;
-}
-
 extern "C" Uint32 SDLCALL timerCallback( Uint32 interval, void *param )
 {
     SDL_RemoveTimer( timer_id );
@@ -80,7 +67,7 @@ extern "C" Uint32 SDLCALL timerCallback( Uint32 interval, void *param )
 	event.type = ONS_TIMER_EVENT;
 	SDL_PushEvent( &event );
 
-    return interval;
+    return 0;
 }
 
 extern "C" Uint32 cdaudioCallback( Uint32 interval, void *param )
@@ -280,9 +267,6 @@ void ONScripter::flushEventSub( SDL_Event &event )
             if (music_file_name) ext = strrchr(music_file_name, '.');
             if (ext && (strcmp(ext+1, "OGG") && strcmp(ext+1, "ogg"))){
                 // set break event to return to script processing when playing music other than ogg
-                SDL_RemoveTimer( break_id );
-                break_id = NULL;
-
                 SDL_Event event;
                 event.type = ONS_BREAK_EVENT;
                 SDL_PushEvent( &event );
@@ -314,9 +298,6 @@ void ONScripter::flushEventSub( SDL_Event &event )
             if (music_file_name) ext = strrchr(music_file_name, '.');
             if (ext && (strcmp(ext+1, "OGG") && strcmp(ext+1, "ogg"))){
                 // set break event to return to script processing when playing music other than ogg
-                SDL_RemoveTimer( break_id );
-                break_id = NULL;
-
                 SDL_Event event;
                 event.type = ONS_BREAK_EVENT;
                 SDL_PushEvent( &event );
@@ -372,39 +353,13 @@ void ONScripter::removeBGMFadeEvent()
     removeEvent(ONS_BGMFADE_EVENT);
 }
 
-void ONScripter::advancePhase( int count )
-{
-    if ( timer_id != NULL ){
-        SDL_RemoveTimer( timer_id );
-        timer_id = NULL;
-    }
-
-    timer_id = SDL_AddTimer( count, timerCallback, NULL );
-}
-
 void ONScripter::waitEventSub(int count)
 {
-    if (break_id != NULL) return; // already in wait queue
+    remaining_time = count;
+    timerEvent();
 
-    if (count != 0){
-        timerEvent(count);
-            
-        if (count > 0)
-            break_id = SDL_AddTimer(count, breakCallback, NULL);
-    }
-    
-    if (count >= 0 && break_id == NULL){
-        SDL_Event event;
-        event.type = ONS_BREAK_EVENT;
-        SDL_PushEvent( &event );
-    }
-    
     runEventLoop();
-
     removeEvent( ONS_BREAK_EVENT );
-    
-    if (break_id) SDL_RemoveTimer(break_id);
-    break_id = NULL;
 }
 
 bool ONScripter::waitEvent( int count )
@@ -1041,20 +996,37 @@ bool ONScripter::keyPressEvent( SDL_KeyboardEvent *event )
     return false;
 }
 
-void ONScripter::timerEvent(int count)
+void ONScripter::timerEvent()
 {
-    if (!(event_mode & WAIT_TIMER_MODE)) return;
-
-    int duration = proceedAnimation();
+    if (remaining_time == 0){
+        SDL_Event event;
+        event.type = ONS_BREAK_EVENT;
+        SDL_PushEvent(&event);
+        return;
+    }
+    
+    int duration = 0;
+    if (event_mode & WAIT_TIMER_MODE){
+        proceedAnimation();
+        duration = calcDurationToNextAnimation();
+    }
             
     if (duration > 0){
-        if (count == -1 || duration < count){
-            resetRemainingTime( duration );
-            advancePhase( duration );
+        if (remaining_time > duration){
+            remaining_time -= duration;
         }
-        else{
-            resetRemainingTime( count );
+        else if (remaining_time > 0){
+            duration = remaining_time;
+            remaining_time = 0;
         }
+        stepAnimation(duration);
+        if (timer_id) SDL_RemoveTimer(timer_id);
+        timer_id = SDL_AddTimer(duration, timerCallback, NULL);
+    }
+    else if (remaining_time > 0){
+        if (timer_id) SDL_RemoveTimer(timer_id);
+        timer_id = SDL_AddTimer(remaining_time, timerCallback, NULL);
+        remaining_time = 0;
     }
 }
 
@@ -1233,6 +1205,7 @@ void ONScripter::runEventLoop()
 
           case ONS_BREAK_EVENT:
             if (event_mode & WAIT_VOICE_MODE && wave_sample[0]){
+                remaining_time = -1;
                 timerEvent();
                 break;
             }

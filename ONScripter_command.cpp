@@ -2,7 +2,7 @@
  * 
  *  ONScripter_command.cpp - Command executer of ONScripter
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -44,9 +44,10 @@ int ONScripter::yesnoboxCommand()
     script_h.readStr();
     const char *mes1 = script_h.saveStringBuffer();
     const char *mes2 = script_h.readStr();
-    SDL_Rect button_rect[2];
-    buildDialog(yesno_flag, mes1, mes2, button_rect);
-    
+    ButtonLink *tmp_button_link = root_button_link.next;
+    root_button_link.next = NULL;
+    buildDialog(yesno_flag, mes1, mes2);
+
     show_dialog_flag = true;
     dirty_rect.add(dialog_info.pos);
     flush(refreshMode());
@@ -55,25 +56,21 @@ int ONScripter::yesnoboxCommand()
         event_mode = WAIT_BUTTON_MODE;
         waitEvent(-1);
 
-        if (current_button_state.button == -1){
+        if (current_button_state.button == -1 ||
+            current_button_state.button == 2){
             script_h.setInt(&script_h.pushed_variable, 0);
             break;
         }
-
-        int i=0;
-        for (; i<2 ; i++){
-            if (current_button_state.x >= button_rect[i].x &&
-                current_button_state.x <  button_rect[i].x+button_rect[i].w &&
-                current_button_state.y >= button_rect[i].y &&
-                current_button_state.y <  button_rect[i].y+button_rect[i].h){
-                script_h.setInt(&script_h.pushed_variable, 1-i);
-                break;
-            }
+        else if (current_button_state.button == 1){
+            script_h.setInt(&script_h.pushed_variable, 1);
+            break;
         }
-        if (i<2) break;
     }
     
     show_dialog_flag = false;
+    delete root_button_link.next->next;
+    delete root_button_link.next;
+    root_button_link.next = tmp_button_link;
     dirty_rect.add(dialog_info.pos);
     flush(refreshMode());
 
@@ -357,6 +354,7 @@ int ONScripter::strspCommand()
 
     int sprite_no = script_h.readInt();
     AnimationInfo *ai = &sprite_info[sprite_no];
+    ai->font_size_xy[0] = -1;
 
     if (ai->image_surface && ai->visible)
         dirty_rect.add( ai->pos );
@@ -1058,7 +1056,9 @@ int ONScripter::resetCommand()
     resetSub();
     mp3fadeout_duration = fadeout;
 
+    start_page = current_page = &page_list[0];
     clearCurrentPage();
+    flush( refreshMode(), &sentence_font_info.pos );
     
     setCurrentLabel( "start" );
     saveSaveFile(-1);
@@ -1162,6 +1162,8 @@ int ONScripter::prnumCommand()
     ai->scalePosXY( screen_ratio1, screen_ratio2 );
     ai->font_size_xy[0] = script_h.readInt();
     ai->font_size_xy[1] = script_h.readInt();
+    ai->font_pitch[0] = ai->font_size_xy[0];
+    ai->font_pitch[1] = ai->font_size_xy[1];
 
     const char *buf = script_h.readStr();
     readColor( &ai->color_list[0], buf );
@@ -1713,13 +1715,14 @@ int ONScripter::logspCommand()
     if (logsp2_flag){
         ai->font_size_xy[0] = script_h.readInt();
         ai->font_size_xy[1] = script_h.readInt();
-        ai->font_pitch = script_h.readInt() + ai->font_size_xy[0];
-        script_h.readInt(); // dummy read for y pitch
+        ai->font_pitch[0] = script_h.readInt() + ai->font_size_xy[0];
+        ai->font_pitch[1] = script_h.readInt() + ai->font_size_xy[1];
     }
     else{
         ai->font_size_xy[0] = sentence_font.font_size_xy[0];
         ai->font_size_xy[1] = sentence_font.font_size_xy[1];
-        ai->font_pitch = sentence_font.pitch_xy[0];
+        ai->font_pitch[0] = sentence_font.pitch_xy[0];
+        ai->font_pitch[1] = sentence_font.pitch_xy[1];
     }
     
     char *current = script_h.getNext();
@@ -3044,6 +3047,20 @@ int ONScripter::checkpageCommand()
     else
         script_h.setInt( &script_h.pushed_variable, 1 );
 
+    return RET_CONTINUE;
+}
+
+int ONScripter::checkkeyCommand()
+{
+    script_h.readVariable();
+    script_h.pushVariable();
+    const char *str = script_h.readStr();
+
+    if (strcmp(current_button_state.str, str) == 0)
+        script_h.setInt( &script_h.pushed_variable, 1 );
+    else
+        script_h.setInt( &script_h.pushed_variable, 0 );
+    
     return RET_CONTINUE;
 }
 

@@ -2,7 +2,7 @@
  * 
  *  ONScripter.cpp - Execution block parser of ONScripter
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -38,8 +38,6 @@ extern "C" void waveCallback( int channel );
 #define DLL_FILE "dll.txt"
 #define DEFAULT_ENV_FONT "‚l‚r ƒSƒVƒbƒN"
 #define DEFAULT_AUTOMODE_TIME 1000
-#define DEFAULT_CURSOR_WAIT    ":l/3,160,2;cursor0.bmp"
-#define DEFAULT_CURSOR_NEWPAGE ":l/3,160,2;cursor1.bmp"
 
 static void SDL_Quit_Wrapper()
 {
@@ -67,8 +65,10 @@ void ONScripter::initSDL()
     }
 #endif
 
+#if !defined(IOS)
     if(SDL_InitSubSystem( SDL_INIT_JOYSTICK ) == 0 && SDL_JoystickOpen(0) != NULL)
         printf( "Initialize JOYSTICK\n");
+#endif
     
 #if defined(PSP) || defined(IPODLINUX) || defined(GP2X) || defined(WINCE)
     SDL_ShowCursor(SDL_DISABLE);
@@ -434,7 +434,7 @@ int ONScripter::init()
     }
     
     // ----------------------------------------
-    // Sound related variables
+    // variables relevant to sound
     this->cdaudio_flag = cdaudio_flag;
 #ifdef USE_CDROM
     cdrom_info = NULL;
@@ -480,6 +480,9 @@ int ONScripter::init()
     for (i=0 ; i<MAX_PARAM_NUM ; i++) bar_info[i] = prnum_info[i] = NULL;
 
     defineresetCommand();
+    if ( loadFileIOBuf( "gloval.sav" ) > 0 )
+        readVariables( script_h.global_variable_border, script_h.variable_range );
+
 #ifdef USE_LUA
     lua_handler.init(this, &script_h);
 #endif    
@@ -539,8 +542,7 @@ void ONScripter::reset()
     getret_int = 0;
     
     // ----------------------------------------
-    // Sound related variables
-    
+    // variables relevant to sound
     wave_play_loop_flag = false;
     midi_play_loop_flag = false;
     music_play_loop_flag = false;
@@ -554,12 +556,6 @@ void ONScripter::reset()
     current_cd_track = -1;
     
     resetSub();
-
-    /* ---------------------------------------- */
-    /* Load global variables if available */
-    if ( loadFileIOBuf( "gloval.sav" ) > 0 ||
-         loadFileIOBuf( "global.sav" ) > 0 )
-        readVariables( script_h.global_variable_border, script_h.variable_range );
 }
 
 void ONScripter::resetSub()
@@ -731,8 +727,8 @@ void ONScripter::mouseOverCheck( int x, int y )
 
         SDL_Rect check_src_rect = {0, 0, 0, 0};
         SDL_Rect check_dst_rect = {0, 0, 0, 0};
-        ButtonLink *cbl = current_button_link;
         if ( current_over_button != 0 ){
+            ButtonLink *cbl = current_button_link;
             cbl->show_flag = 0;
             check_src_rect = cbl->image_rect;
             if ( cbl->button_type == ButtonLink::SPRITE_BUTTON ){
@@ -929,6 +925,7 @@ void ONScripter::deleteButtonLink()
     while( b1 ){
         ButtonLink *b2 = b1;
         b1 = b1->next;
+        if (b2 == current_button_link) current_over_button = 0;
         delete b2;
     }
     root_button_link.next = NULL;
@@ -1051,17 +1048,17 @@ void ONScripter::newPage()
     flush( refreshMode(), &sentence_font_info.pos );
 }
 
-struct ONScripter::ButtonLink *ONScripter::getSelectableSentence( char *buffer, FontInfo *info, bool flush_flag, bool nofile_flag )
+ButtonLink *ONScripter::getSelectableSentence( char *buffer, FontInfo *info, bool flush_flag, bool nofile_flag )
 {
     int current_text_xy[2];
     current_text_xy[0] = info->xy[0];
     current_text_xy[1] = info->xy[1];
     
-    ButtonLink *button_link = new ButtonLink();
-    button_link->button_type = ButtonLink::TMP_SPRITE_BUTTON;
-    button_link->show_flag = 1;
+    ButtonLink *bl = new ButtonLink();
+    bl->button_type = ButtonLink::TMP_SPRITE_BUTTON;
+    bl->show_flag = 1;
 
-    AnimationInfo *ai = button_link->anim[0] = new AnimationInfo();
+    AnimationInfo *ai = bl->anim[0] = new AnimationInfo();
     
     ai->trans_mode = AnimationInfo::TRANS_STRING;
     ai->is_single_line = false;
@@ -1081,7 +1078,7 @@ struct ONScripter::ButtonLink *ONScripter::getSelectableSentence( char *buffer, 
     ai->visible = true;
 
     setupAnimationInfo( ai, info );
-    button_link->select_rect = button_link->image_rect = ai->pos;
+    bl->select_rect = bl->image_rect = ai->pos;
 
     info->newLine();
     if (info->getTateyokoMode() == FontInfo::YOKO_MODE)
@@ -1089,9 +1086,9 @@ struct ONScripter::ButtonLink *ONScripter::getSelectableSentence( char *buffer, 
     else
         info->xy[1] = current_text_xy[1];
 
-    dirty_rect.add( button_link->image_rect );
+    dirty_rect.add( bl->image_rect );
     
-    return button_link;
+    return bl;
 }
 
 void ONScripter::decodeExbtnControl( const char *ctl_str, SDL_Rect *check_src_rect, SDL_Rect *check_dst_rect )
@@ -1151,38 +1148,6 @@ void ONScripter::decodeExbtnControl( const char *ctl_str, SDL_Rect *check_src_re
             ai->visible = true;
             dirty_rect.add( ai->pos );
         }
-    }
-}
-
-void ONScripter::loadCursor( int no, const char *str, int x, int y, bool abs_flag )
-{
-    AnimationInfo *ai = &cursor_info[no];
-    
-    if (str){
-        ai->setImageName( str );
-    }
-    else{
-        if (no == 0) ai->setImageName( DEFAULT_CURSOR_WAIT );
-        else         ai->setImageName( DEFAULT_CURSOR_NEWPAGE );
-    }
-    ai->orig_pos.x = x;
-    ai->orig_pos.y = y;
-    ai->scalePosXY( screen_ratio1, screen_ratio2 );
-
-    parseTaggedString( ai );
-    setupAnimationInfo( ai );
-
-    if ( filelog_flag )
-        script_h.findAndAddLog( script_h.log_info[ScriptHandler::FILE_LOG], ai->file_name, true ); // a trick for save file
-    ai->abs_flag = abs_flag;
-    if ( ai->image_surface )
-        ai->visible = true;
-    else
-        ai->remove();
-
-    if (str == NULL){
-        if (no == 0) ai->deleteImageName();
-        else         ai->deleteImageName();
     }
 }
 

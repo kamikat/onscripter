@@ -2,7 +2,7 @@
  *
  *  LUAHandler.cpp - LUA handler for ONScripter
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -27,6 +27,33 @@
 
 #define ONS_LUA_HANDLER_PTR "ONS_LUA_HANDLER_PTR"
 #define INIT_SCRIPT "system.lua"
+
+static char cmd_buf[256];
+
+int NL_dofile(lua_State *state)
+{
+    lua_getglobal( state, ONS_LUA_HANDLER_PTR );
+    LUAHandler *lh = (LUAHandler*)lua_topointer( state, -1 );
+
+    const char *str = luaL_checkstring( state, 1 );
+    
+    unsigned long length = lh->sh->cBR->getFileLength(str);
+    if (length == 0){
+        printf("cannot open %s\n", str);
+        return 0;
+    }
+
+    unsigned char *buffer = new unsigned char[length];
+    int location;
+    lh->sh->cBR->getFile(str, buffer, &location);
+    if (luaL_loadbuffer(state, (const char*)buffer, length, str) || lua_pcall(state, 0, 0, 0)){
+        printf("cannot parse %s\n", str);
+    }
+
+    delete[] buffer;
+
+    return 0;
+}
 
 int NSPopInt(lua_State *state)
 {
@@ -234,12 +261,10 @@ int NSExec(lua_State *state)
     lua_getglobal(state, ONS_LUA_HANDLER_PTR);
     LUAHandler *lh = (LUAHandler*)lua_topointer(state, -1);
     
-    const char *str = lua_tostring(state, 1);
-    char str2[256];
-    strcpy(str2, str);
-    //printf("NSExec [%s]\n", str);
+    strcpy(cmd_buf, lua_tostring(state, 1));
+    //printf("NSExec [%s]\n", cmd_buf);
     
-    lh->sh->enterExternalScript(str2);
+    lh->sh->enterExternalScript(cmd_buf);
     lh->ons->runScript();
     lh->sh->leaveExternalScript();
 
@@ -302,8 +327,181 @@ int NSLuaAnimationMode(lua_State *state)
     return 0;
 }
 
+int NSGetSkip(lua_State *state)
+{
+    lua_getglobal(state, ONS_LUA_HANDLER_PTR);
+    LUAHandler *lh = (LUAHandler*)lua_topointer(state, -1);
+    
+    lua_pushinteger( state, lh->ons->getSkip() );
+
+    return 1;
+}
+
+int NSGetWindowSize(lua_State *state)
+{
+    lua_getglobal(state, ONS_LUA_HANDLER_PTR);
+    LUAHandler *lh = (LUAHandler*)lua_topointer(state, -1);
+
+    lua_pushinteger( state, lh->ons->getWidth() );
+    lua_pushinteger( state, lh->ons->getHeight() );
+
+    return 2;
+}
+
+int NSTimer(lua_State *state)
+{
+    lua_getglobal(state, ONS_LUA_HANDLER_PTR);
+    lua_pushinteger( state, SDL_GetTicks() );
+
+    return 1;
+}
+
+int NSGetKey(lua_State *state)
+{
+    lua_getglobal(state, ONS_LUA_HANDLER_PTR);
+    LUAHandler *lh = (LUAHandler*)lua_topointer(state, -1);
+
+    const char *str = luaL_checkstring( state, 1 );
+    const char *str2 = lh->ons->getCurrentButtonStr();
+    
+    if ( strcmp(str, str2) == 0 || 
+        (strcmp(str, "ESC") == 0 && strcmp(str2, "RCLICK") == 0))
+        lua_pushboolean( state, 1 );
+    else
+        lua_pushboolean( state, 0 );
+
+    return 1;
+}
+
+int NSUpdate(lua_State *state)
+{
+    lua_getglobal(state, ONS_LUA_HANDLER_PTR);
+    LUAHandler *lh = (LUAHandler*)lua_topointer(state, -1);
+
+    sprintf(cmd_buf, "print 1");
+    lh->sh->enterExternalScript(cmd_buf);
+    lh->ons->runScript();
+    lh->sh->leaveExternalScript();
+
+    return 0;
+}
+
+int NSSpCell(lua_State *state)
+{
+    lua_getglobal(state, ONS_LUA_HANDLER_PTR);
+    LUAHandler *lh = (LUAHandler*)lua_topointer(state, -1);
+
+    int no = luaL_checkint( state, 1 );
+    int cell = luaL_checkint( state, 2 );
+
+    sprintf(cmd_buf, "cell %d, %d", no, cell);
+    lh->sh->enterExternalScript(cmd_buf);
+    lh->ons->runScript();
+    lh->sh->leaveExternalScript();
+
+    return 0;
+}
+
+int NSSpClear(lua_State *state)
+{
+    lua_getglobal(state, ONS_LUA_HANDLER_PTR);
+    LUAHandler *lh = (LUAHandler*)lua_topointer(state, -1);
+
+    int no = luaL_checkint( state, 1 );
+
+    sprintf(cmd_buf, "csp %d", no);
+    lh->sh->enterExternalScript(cmd_buf);
+    lh->ons->runScript();
+    lh->sh->leaveExternalScript();
+
+    return 0;
+}
+
+int NSSpGetInfo(lua_State *state)
+{
+    lua_getglobal(state, ONS_LUA_HANDLER_PTR);
+    LUAHandler *lh = (LUAHandler*)lua_topointer(state, -1);
+
+    int no = luaL_checkint( state, 1 );
+
+    AnimationInfo *ai = lh->ons->getSpriteInfo(no);
+
+    lua_pushinteger( state, ai->orig_pos.w );
+    lua_pushinteger( state, ai->orig_pos.h );
+    lua_pushinteger( state, ai->num_of_cells );
+
+    return 3;
+}
+
+int NSSpGetPos(lua_State *state)
+{
+    lua_getglobal(state, ONS_LUA_HANDLER_PTR);
+    LUAHandler *lh = (LUAHandler*)lua_topointer(state, -1);
+
+    int no = luaL_checkint( state, 1 );
+
+    AnimationInfo *ai = lh->ons->getSpriteInfo(no);
+
+    lua_pushinteger( state, ai->orig_pos.x );
+    lua_pushinteger( state, ai->orig_pos.y );
+    lua_pushinteger( state, ai->trans );
+
+    return 3;
+}
+
+int NSSpLoad(lua_State *state)
+{
+    lua_getglobal(state, ONS_LUA_HANDLER_PTR);
+    LUAHandler *lh = (LUAHandler*)lua_topointer(state, -1);
+
+    int no = luaL_checkint( state, 1 );
+    const char *str = luaL_checkstring( state, 2 );
+
+    sprintf(cmd_buf, "lsp %d, \"%s\", %d, 0", no, str, lh->ons->getWidth()+1);
+    lh->sh->enterExternalScript(cmd_buf);
+    lh->ons->runScript();
+    lh->sh->leaveExternalScript();
+
+    return 0;
+}
+
+int NSSpMove(lua_State *state)
+{
+    lua_getglobal(state, ONS_LUA_HANDLER_PTR);
+    LUAHandler *lh = (LUAHandler*)lua_topointer(state, -1);
+
+    int no = luaL_checkint( state, 1 );
+    int x  = luaL_checkint( state, 2 );
+    int y  = luaL_checkint( state, 3 );
+    int alpha = luaL_checkint( state, 4 );
+
+    sprintf(cmd_buf, "amsp %d, %d, %d, %d", no, x, y, alpha);
+    lh->sh->enterExternalScript(cmd_buf);
+    lh->ons->runScript();
+    lh->sh->leaveExternalScript();
+
+    return 0;
+}
+
+int NSSpVisible(lua_State *state)
+{
+    lua_getglobal(state, ONS_LUA_HANDLER_PTR);
+    LUAHandler *lh = (LUAHandler*)lua_topointer(state, -1);
+
+    int no = luaL_checkint( state, 1 );
+    int v  = lua_toboolean( state, 2 );
+
+    sprintf(cmd_buf, "vsp %d, %d", no, v);
+    lh->sh->enterExternalScript(cmd_buf);
+    lh->ons->runScript();
+    lh->sh->leaveExternalScript();
+
+    return 0;
+}
+
 #define LUA_FUNC_LUT(s) {#s, s}
 static const struct luaL_Reg lua_lut[] = {
+    LUA_FUNC_LUT(NL_dofile),
     LUA_FUNC_LUT(NSPopInt),
     LUA_FUNC_LUT(NSPopIntRef),
     LUA_FUNC_LUT(NSPopStr),
@@ -320,8 +518,19 @@ static const struct luaL_Reg lua_lut[] = {
     LUA_FUNC_LUT(NSGoto),
     LUA_FUNC_LUT(NSGosub),
     LUA_FUNC_LUT(NSReturn),
-    LUA_FUNC_LUT(NSLuaAnimationMode),
     LUA_FUNC_LUT(NSLuaAnimationInterval),
+    LUA_FUNC_LUT(NSLuaAnimationMode),
+    LUA_FUNC_LUT(NSGetSkip),
+    LUA_FUNC_LUT(NSGetWindowSize),
+    LUA_FUNC_LUT(NSTimer),
+    LUA_FUNC_LUT(NSGetKey),
+    LUA_FUNC_LUT(NSUpdate),
+    LUA_FUNC_LUT(NSSpClear),
+    LUA_FUNC_LUT(NSSpGetInfo),
+    LUA_FUNC_LUT(NSSpGetPos),
+    LUA_FUNC_LUT(NSSpLoad),
+    LUA_FUNC_LUT(NSSpMove),
+    LUA_FUNC_LUT(NSSpVisible),
     {NULL, NULL}
 };
 
@@ -369,7 +578,7 @@ void LUAHandler::init(ONScripter *ons, ScriptHandler *sh)
     int location;
     sh->cBR->getFile(INIT_SCRIPT, buffer, &location);
     if (luaL_loadbuffer(state, (const char*)buffer, length, INIT_SCRIPT) || lua_pcall(state, 0, 0, 0)){
-        printf("cannot load %s\n", INIT_SCRIPT);
+        printf("cannot parse %s\n", INIT_SCRIPT);
     }
 
     delete[] buffer;

@@ -2,7 +2,7 @@
  * 
  *  ONScripter_text.cpp - Text parser of ONScripter
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -51,9 +51,9 @@ void ONScripter::shiftHalfPixelX(SDL_Surface *surface)
 {
     SDL_LockSurface( surface );
     unsigned char *buf = (unsigned char*)surface->pixels;
-    for (int i=surface->h ; i!=0 ; --i){
+    for (int i=surface->h ; i!=0 ; i--){
         unsigned char c = buf[0];
-        for (int j=1 ; j<surface->w ; ++j){
+        for (int j=1 ; j<surface->w ; j++){
             buf[j-1] = (buf[j]+c)>>1;
             c = buf[j];
         }
@@ -66,10 +66,10 @@ void ONScripter::shiftHalfPixelX(SDL_Surface *surface)
 void ONScripter::shiftHalfPixelY(SDL_Surface *surface)
 {
     SDL_LockSurface( surface );
-    for (int j=surface->w ; j!=0 ; --j){
+    for (int j=surface->w-1 ; j>=0 ; j--){
         unsigned char *buf = (unsigned char*)surface->pixels + j;
         unsigned char c = buf[0];
-        for (int i=1 ; i<surface->h ; ++i){
+        for (int i=1 ; i<surface->h ; i++){
             buf += surface->pitch;
             *(buf-surface->pitch) = (*buf+c)>>1;
             c = *buf;
@@ -228,9 +228,9 @@ void ONScripter::drawChar( char* text, FontInfo *info, bool flush_flag, bool loo
         else if ( flush_flag ){
             if (info->is_shadow){
                 if (render_font_outline)
-                    info->addShadeArea(dst_rect, -1, -1, 3, 3);
+                    info->addShadeArea(dst_rect, -1, -1, 2, 2);
                 else
-                    info->addShadeArea(dst_rect, shade_distance[0], shade_distance[1]);
+                    info->addShadeArea(dst_rect, 0, 0, shade_distance[0], shade_distance[1]);
             }
             flushDirect( dst_rect, REFRESH_NONE_MODE );
         }
@@ -350,9 +350,9 @@ void ONScripter::drawString( const char *str, uchar3 color, FontInfo *info, bool
 
     if (info->is_shadow){
         if (render_font_outline)
-            info->addShadeArea(scaled_clipped_rect, -1, -1, 3, 3);
+            info->addShadeArea(scaled_clipped_rect, -1, -1, 2, 2);
         else
-            info->addShadeArea(scaled_clipped_rect, shade_distance[0], shade_distance[1]);
+            info->addShadeArea(scaled_clipped_rect, 0, 0, shade_distance[0], shade_distance[1]);
     }
     
     if ( flush_flag )
@@ -803,7 +803,6 @@ bool ONScripter::processText()
         /* Kinsoku process */
         if ( checkLineBreak( script_h.getStringBuffer() + string_buffer_offset, &sentence_font ) ){
             sentence_font.newLine();
-            current_page->add(0x0a);
             for (int i=0 ; i<indent_offset ; i++){
                 current_page->add(LOC_TWOBYTE_SYMBOL(' ')[0]);
                 current_page->add(LOC_TWOBYTE_SYMBOL(' ')[1]);
