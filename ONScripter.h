@@ -79,6 +79,8 @@ public:
     void setKeyEXE(const char *path);
     int  getWidth(){ return screen_width;};
     int  getHeight(){return screen_height;};
+    const char* getCurrentButtonStr(){return current_button_state.str;};
+    int  getSkip(){return automode_flag?2:((skip_mode&SKIP_NORMAL)?1:0);};
         
     int  openScript();
     int  init();
@@ -246,6 +248,7 @@ public:
     int clCommand();
     int chvolCommand();
     int checkpageCommand();
+    int checkkeyCommand();
     int cellCommand();
     int captionCommand();
     int btnwait2Command();
@@ -373,6 +376,7 @@ private:
 public:
     void executeLabel();
     void runScript();
+    AnimationInfo *getSpriteInfo(int no){ return &sprite_info[no]; };
 private:
     int  parseLine();
     void deleteButtonLink();

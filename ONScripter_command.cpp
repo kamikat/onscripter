@@ -3050,6 +3050,20 @@ int ONScripter::checkpageCommand()
     return RET_CONTINUE;
 }
 
+int ONScripter::checkkeyCommand()
+{
+    script_h.readVariable();
+    script_h.pushVariable();
+    const char *str = script_h.readStr();
+
+    if (strcmp(current_button_state.str, str) == 0)
+        script_h.setInt( &script_h.pushed_variable, 1 );
+    else
+        script_h.setInt( &script_h.pushed_variable, 0 );
+    
+    return RET_CONTINUE;
+}
+
 int ONScripter::cellCommand()
 {
     int sprite_no = script_h.readInt();
