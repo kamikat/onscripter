@@ -2493,11 +2493,6 @@ int ONScripter::gameCommand()
     }
     
     /* ---------------------------------------- */
-    /* Load default cursor */
-    loadCursor( 0, NULL, 0, 0 );
-    loadCursor( 1, NULL, 0, 0 );
-
-    /* ---------------------------------------- */
     /* Initialize text buffer */
     page_list = new Page[max_page_list];
     for ( i=0 ; i<max_page_list-1 ; i++ ){
@@ -2508,6 +2503,9 @@ int ONScripter::gameCommand()
     page_list[max_page_list-1].next = &page_list[0];
 
     resetCommand();
+
+    loadCursor( 0, NULL, 0, 0 );
+    loadCursor( 1, NULL, 0, 0 );
 
 #ifdef USE_LUA
     if (lua_handler.isCallbackEnabled(LUAHandler::LUA_RESET)){
