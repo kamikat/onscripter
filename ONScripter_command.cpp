@@ -302,11 +302,8 @@ int ONScripter::talCommand()
     else if ( loc == 'c' ) no = 1;
     else if ( loc == 'r' ) no = 2;
 
-    if (no >= 0){
+    if (no >= 0)
         trans = script_h.readInt();
-        if      (trans > 256) trans = 256;
-        else if (trans < 0  ) trans = 0;
-    }
 
     if (no >= 0){
         tachi_info[ no ].trans = trans;
@@ -394,7 +391,7 @@ int ONScripter::strspCommand()
     }
 
     ai->trans_mode = AnimationInfo::TRANS_STRING;
-    ai->trans = 256;
+    ai->trans = -1;
     ai->visible = v;
     ai->is_single_line = false;
     ai->is_tight_region = false;
@@ -1060,6 +1057,10 @@ int ONScripter::resetCommand()
     clearCurrentPage();
     flush( refreshMode(), &sentence_font_info.pos );
     
+    /* Initialize local variables */
+    for (int i=0 ; i<script_h.global_variable_border ; i++)
+        script_h.getVariableData(i).reset(false);
+
     setCurrentLabel( "start" );
     saveSaveFile(-1);
     
@@ -1289,10 +1290,14 @@ int ONScripter::mspCommand()
         dirty_rect.add( ai->pos );
     }
     
-    if ( script_h.getEndStatus() & ScriptHandler::END_COMMA )
-        ai->trans += script_h.readInt();
-    if      ( ai->trans > 256 ) ai->trans = 256;
-    else if ( ai->trans <   0 ) ai->trans = 0;
+    if ( script_h.getEndStatus() & ScriptHandler::END_COMMA ){
+        if (ai->trans == -1)
+            ai->trans = 255 + script_h.readInt();
+        else
+            ai->trans += script_h.readInt();
+        if      (ai->trans <   0) ai->trans = 0;
+        else if (ai->trans > 255) ai->trans = 255;
+    }
 
     return RET_CONTINUE;
 }
@@ -1588,7 +1593,7 @@ int ONScripter::lsp2Command()
     if ( script_h.getEndStatus() & ScriptHandler::END_COMMA )
         ai->trans = script_h.readInt();
     else
-        ai->trans = 256;
+        ai->trans = -1;
 
     parseTaggedString( ai );
     setupAnimationInfo( ai );
@@ -1624,7 +1629,7 @@ int ONScripter::lspCommand()
     if ( script_h.getEndStatus() & ScriptHandler::END_COMMA )
         ai->trans = script_h.readInt();
     else
-        ai->trans = 256;
+        ai->trans = -1;
 
     parseTaggedString( ai );
     setupAnimationInfo( ai );
@@ -2501,17 +2506,15 @@ int ONScripter::gameCommand()
     }
     page_list[0].previous = &page_list[max_page_list-1];
     page_list[max_page_list-1].next = &page_list[0];
-    start_page = current_page = &page_list[0];
 
-    clearCurrentPage();
+    resetCommand();
 
-    /* ---------------------------------------- */
-    /* Initialize local variables */
-    for ( i=0 ; i<script_h.global_variable_border ; i++ )
-        script_h.getVariableData(i).reset(false);
-
-    setCurrentLabel( "start" );
-    saveSaveFile(-1);
+#ifdef USE_LUA
+    if (lua_handler.isCallbackEnabled(LUAHandler::LUA_RESET)){
+        if (lua_handler.callFunction(true, "reset"))
+            errorAndExit( lua_handler.error_str );
+    }
+#endif
 
     return RET_CONTINUE;
 }
@@ -2836,7 +2839,7 @@ int ONScripter::drawbg2Command()
 
     SDL_Rect clip = {0, 0, screen_width, screen_height};
     bi.blendOnSurface2( accumulation_surface, bi.pos.x, bi.pos.y,
-                        clip, 256 );
+                        clip, 255 );
 
     return RET_CONTINUE;
 }
@@ -2860,11 +2863,20 @@ int ONScripter::delayCommand()
 
 int ONScripter::defineresetCommand()
 {
+    saveGlovalData();
+
     script_h.reset();
     ScriptParser::reset();
     reset();
 
     setCurrentLabel( "define" );
+
+    if ( loadFileIOBuf( "gloval.sav" ) > 0 )
+        readVariables( script_h.global_variable_border, script_h.variable_range );
+
+#ifdef USE_LUA
+    lua_handler.init(this, &script_h);
+#endif    
 
     return RET_CONTINUE;
 }
@@ -3632,11 +3644,11 @@ int ONScripter::amspCommand()
         dirty_rect.add( ai->pos );
     }
     
-    if ( script_h.getEndStatus() & ScriptHandler::END_COMMA )
+    if ( script_h.getEndStatus() & ScriptHandler::END_COMMA ){
         ai->trans = script_h.readInt();
-
-    if      ( ai->trans > 256 ) ai->trans = 256;
-    else if ( ai->trans <   0 ) ai->trans = 0;
+        if      (ai->trans <   0) ai->trans = 0;
+        else if (ai->trans > 255) ai->trans = 255;
+    }
 
     return RET_CONTINUE;
 }

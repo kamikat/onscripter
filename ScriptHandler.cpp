@@ -367,7 +367,7 @@ void ScriptHandler::skipToken()
     bool quat_flag = false;
     bool text_flag = false;
     while(1){
-        if ( *buf == 0x0a ||
+        if ( *buf == 0x0a || *buf == 0 ||
              (!quat_flag && !text_flag && (*buf == ':' || *buf == ';') ) ) break;
         if ( *buf == '"' ) quat_flag = !quat_flag;
         if ( IS_TWO_BYTE(*buf) ){

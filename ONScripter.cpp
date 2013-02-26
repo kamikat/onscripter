@@ -195,7 +195,7 @@ void ONScripter::initSDL()
 
 void ONScripter::openAudio()
 {
-#if (defined(PDA_WIDTH) || defined(PDA_AUTOSIZE)) && !defined(PSP) && !defined(IPHONE) && !defined(IOS)
+#if (defined(PDA_WIDTH) || defined(PDA_AUTOSIZE)) && !defined(PSP) && !defined(IPHONE) && !defined(IOS) && !defined(PANDORA)
     if ( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, DEFAULT_AUDIOBUF ) < 0 ){
 #else        
     if ( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, DEFAULT_AUDIOBUF ) < 0 ){
@@ -478,12 +478,7 @@ int ONScripter::init()
     for (i=0 ; i<MAX_PARAM_NUM ; i++) bar_info[i] = prnum_info[i] = NULL;
 
     defineresetCommand();
-    if ( loadFileIOBuf( "gloval.sav" ) > 0 )
-        readVariables( script_h.global_variable_border, script_h.variable_range );
 
-#ifdef USE_LUA
-    lua_handler.init(this, &script_h);
-#endif    
     readToken();
 
     if ( sentence_font.openFont( font_file, screen_ratio1, screen_ratio2 ) == NULL ){

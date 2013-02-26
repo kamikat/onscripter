@@ -141,13 +141,8 @@ int ONScripter::loadSaveFile2( int file_version )
         if ( readInt() == 1 ) ai->visible = true;
         else                  ai->visible = false;
         ai->current_cell = readInt();
-        if (file_version >= 203){
-            j = readInt();
-            if (j == -1)
-                ai->trans = 256;
-            else
-                ai->trans = j;
-        }
+        if (file_version >= 203)
+            ai->trans = readInt();
     }
 
     readVariables( 0, script_h.global_variable_border );
@@ -375,11 +370,7 @@ int ONScripter::loadSaveFile2( int file_version )
             ai->rot     = readInt();
             if ( readInt() == 1 ) ai->visible = true;
             else                  ai->visible = false;
-            j = readInt();
-            if (j == -1)
-                ai->trans = 256;
-            else
-                ai->trans = j;
+            ai->trans = readInt();
             ai->blending_mode = readInt();
             ai->calcAffineMatrix();
         }
@@ -522,10 +513,7 @@ void ONScripter::saveSaveFile2( bool output_flag )
         writeInt( ai->orig_pos.y,   output_flag );
         writeInt( ai->visible?1:0,  output_flag );
         writeInt( ai->current_cell, output_flag );
-        if (ai->trans == 256)
-            writeInt( -1, output_flag );
-        else
-            writeInt( ai->trans, output_flag );
+        writeInt( ai->trans, output_flag );
     }
 
     writeVariables( 0, script_h.global_variable_border, output_flag );
@@ -656,10 +644,7 @@ void ONScripter::saveSaveFile2( bool output_flag )
         writeInt( ai->scale_y,     output_flag );
         writeInt( ai->rot,         output_flag );
         writeInt( ai->visible?1:0, output_flag );
-        if (ai->trans == 256)
-            writeInt( -1, output_flag );
-        else
-            writeInt( ai->trans, output_flag );
+        writeInt( ai->trans, output_flag );
         writeInt( ai->blending_mode, output_flag );
     }
 
@@ -709,7 +694,7 @@ void ONScripter::saveSaveFile2( bool output_flag )
 
     i = 0;
     if (!script_h.isText()){
-        while( buf != script_h.getCurrent() ){
+        while( buf != script_h.getCurrent(true) ){
             if ( *buf == ':' ) i++;
             buf++;
         }

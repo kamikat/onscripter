@@ -2,7 +2,7 @@
  * 
  *  ScriptHandler.h - Script manipulation class
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -120,7 +120,7 @@ public:
     void addStringBuffer( char ch );
     
     // function for direct manipulation of script address 
-    inline char *getCurrent(){ return current_script; };
+    inline char *getCurrent(bool use_script=false){ return (use_script && internal_current_script)?internal_current_script:current_script; };
     inline char *getNext(){ return next_script; };
     inline char *getWait(){ return wait_script; };
     void setCurrent(char *pos);
