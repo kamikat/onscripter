@@ -113,7 +113,9 @@ void ONScripter::proceedAnimation()
             int tmp_string_buffer_offset = string_buffer_offset;
 
             char *current = script_h.getCurrent();
-            lua_handler.callback(LUAHandler::LUA_ANIMATION);
+            if (lua_handler.isCallbackEnabled(LUAHandler::LUA_ANIMATION))
+                if (lua_handler.callFunction(true, "animation"))
+                    errorAndExit( lua_handler.error_str );
             script_h.setCurrent(current);
             readToken();
 
@@ -403,11 +405,9 @@ void ONScripter::drawTaggedSurface( SDL_Surface *dst_surface, AnimationInfo *ani
     }
 
     if (!anim->affine_flag)
-        anim->blendOnSurface( dst_surface, poly_rect.x, poly_rect.y,
-                              clip, anim->trans );
+        anim->blendOnSurface( dst_surface, poly_rect.x, poly_rect.y, clip, anim->trans );
     else
-        anim->blendOnSurface2( dst_surface, poly_rect.x, poly_rect.y,
-                               clip, anim->trans );
+        anim->blendOnSurface2( dst_surface, poly_rect.x, poly_rect.y, clip, anim->trans );
 }
 
 void ONScripter::stopAnimation( int click )

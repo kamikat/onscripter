@@ -608,12 +608,6 @@ void LUAHandler::addCallback(const char *label)
         callback_state[LUA_RESET] = true;
 }
 
-void LUAHandler::callback(int name)
-{
-    if (name == LUA_ANIMATION)
-        callFunction(true, "animation");
-}
-
 int LUAHandler::callFunction(bool is_callback, const char *cmd)
 {
     char cmd2[256];

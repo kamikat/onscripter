@@ -357,7 +357,13 @@ protected:
             if (tag)  delete[] tag;
         }
         int add(char ch){
-            if (text_count >= max_text) return -1;
+            if (text_count >= max_text){
+                char *text2 = new char[max_text*2];
+                memcpy(text2, text, max_text);
+                delete[] text;
+                text = text2;
+                max_text *= 2;
+            }
             text[text_count++] = ch;
             return 0;
         };
