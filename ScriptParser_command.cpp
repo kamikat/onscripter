@@ -2,7 +2,7 @@
  *
  *  ScriptParser_command.cpp - Define command executer of ONScripter
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -287,6 +287,22 @@ int ScriptParser::savenameCommand()
     buf = script_h.readStr();
     setStr( &save_item_name, buf );
 
+    return RET_CONTINUE;
+}
+
+int ScriptParser::savedirCommand()
+{
+    if ( current_mode != DEFINE_MODE )
+        errorAndExit( "savedir: not in the define section" );
+
+    const char *path = script_h.readStr();
+
+    if (!save_dir){
+        // this is a workaround to keep save_dir set in ONScripter::setSaveDir(const char *path)
+        save_dir = new char[ strlen(archive_path) + strlen(path) + 2 ];
+        sprintf( save_dir, "%s%s%c", archive_path, path, DELIMITER );
+    }
+    
     return RET_CONTINUE;
 }
 

@@ -2,7 +2,7 @@
  *
  *  ScriptParser.cpp - Define block parser of ONScripter
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -46,6 +46,7 @@ ScriptParser::ScriptParser()
     screen_ratio2 = 1;
 
     archive_path = NULL;
+    save_dir = NULL;
     version_str = NULL;
     savedir = NULL;
     nsa_path = NULL;
@@ -260,7 +261,7 @@ int ScriptParser::openScript()
         script_h.cBR->open();
     }
     
-    if ( script_h.openScript( archive_path ) ) return -1;
+    if ( script_h.openScript( archive_path, save_dir ) ) return -1;
 
     screen_width  = script_h.screen_width;
     screen_height = script_h.screen_height;
@@ -350,8 +351,11 @@ void ScriptParser::allocFileIOBuf()
 
 int ScriptParser::saveFileIOBuf( const char *filename, int offset, const char *savestr )
 {
+    bool use_save_dir = false;
+    if (strcmp(filename, "envdata") != 0) use_save_dir = true;
+    
     FILE *fp;
-    if ( (fp = fopen( filename, "wb" )) == NULL ) return -1;
+    if ( (fp = fopen( filename, "wb", use_save_dir )) == NULL ) return -1;
     
     size_t ret = fwrite(file_io_buf+offset, 1, file_io_buf_ptr-offset, fp);
 
@@ -371,8 +375,11 @@ int ScriptParser::saveFileIOBuf( const char *filename, int offset, const char *s
 
 size_t ScriptParser::loadFileIOBuf( const char *filename )
 {
+    bool use_save_dir = false;
+    if (strcmp(filename, "envdata") != 0) use_save_dir = true;
+
     FILE *fp;
-    if ( (fp = fopen( filename, "rb" )) == NULL )
+    if ( (fp = fopen( filename, "rb", use_save_dir )) == NULL )
         return 0;
     
     fseek(fp, 0, SEEK_END);
@@ -694,10 +701,13 @@ ScriptParser::EffectLink *ScriptParser::parseEffect(bool init_flag)
     return NULL;
 }
 
-FILE *ScriptParser::fopen(const char *path, const char *mode)
+FILE *ScriptParser::fopen(const char *path, const char *mode, bool use_save_dir)
 {
     char filename[256];
-    sprintf( filename, "%s%s", archive_path, path );
+    if (use_save_dir && save_dir)
+        sprintf( filename, "%s%s", save_dir, path );
+    else
+        sprintf( filename, "%s%s", archive_path, path );
 
     return ::fopen( filename, mode );
 }

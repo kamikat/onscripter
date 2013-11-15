@@ -2,7 +2,7 @@
  *
  *  ScriptHandler.cpp - Script manipulation class
  *
- *  Copyright (c) 2001-2012 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -30,6 +30,7 @@
 
 ScriptHandler::ScriptHandler()
 {
+    save_dir = NULL;
     num_of_labels = 0;
     script_buffer = NULL;
     kidoku_buffer = NULL;
@@ -124,13 +125,20 @@ void ScriptHandler::reset()
     internal_current_script = NULL;
 }
 
-FILE *ScriptHandler::fopen( const char *path, const char *mode )
+FILE *ScriptHandler::fopen( const char *path, const char *mode, bool use_save_dir )
 {
-    char * file_name = new char[strlen(archive_path)+strlen(path)+1];
-    sprintf( file_name, "%s%s", archive_path, path );
+    char *filename;
+    if (use_save_dir && save_dir){
+        filename = new char[strlen(save_dir)+strlen(path)+1];
+        sprintf( filename, "%s%s", save_dir, path );
+    }
+    else{
+        filename = new char[strlen(archive_path)+strlen(path)+1];
+        sprintf( filename, "%s%s", archive_path, path );
+    }
 
-    FILE *fp = ::fopen( file_name, mode );
-    delete[] file_name;
+    FILE *fp = ::fopen( filename, mode );
+    delete[] filename;
 
     return fp;
 }
@@ -560,7 +568,7 @@ void ScriptHandler::saveKidokuData()
 {
     FILE *fp;
 
-    if ( ( fp = fopen( "kidoku.dat", "wb" ) ) == NULL ){
+    if ( ( fp = fopen( "kidoku.dat", "wb", true ) ) == NULL ){
         fprintf( stderr, "can't write kidoku.dat\n" );
         return;
     }
@@ -577,7 +585,7 @@ void ScriptHandler::loadKidokuData()
     kidoku_buffer = new char[ script_buffer_length/8 + 1 ];
     memset( kidoku_buffer, 0, script_buffer_length/8 + 1 );
 
-    if ( ( fp = fopen( "kidoku.dat", "rb" ) ) != NULL ){
+    if ( ( fp = fopen( "kidoku.dat", "rb", true ) ) != NULL ){
         fread( kidoku_buffer, 1, script_buffer_length/8, fp );
         fclose( fp );
     }
@@ -794,9 +802,9 @@ int ScriptHandler::getStringFromInteger( char *buffer, int no, int num_column, b
 #endif    
 }
 
-int ScriptHandler::openScript(char *path)
+int ScriptHandler::openScript(char *path, char *spath)
 {
-    if (readScript(path) < 0) return -1;
+    if (readScript(path, spath) < 0) return -1;
     readConfiguration();
     variable_data = new VariableData[variable_range];
     return labelScript();
@@ -921,10 +929,14 @@ ScriptHandler::VariableData &ScriptHandler::getVariableData(int no)
 // ----------------------------------------
 // Private methods
 
-int ScriptHandler::readScript( char *path )
+int ScriptHandler::readScript( char *path, char *spath )
 {
     archive_path = new char[strlen(path) + 1];
     strcpy( archive_path, path );
+    if (spath){
+        save_dir = new char[strlen(spath) + 1];
+        strcpy( save_dir, spath );
+    }
 
     FILE *fp = NULL;
     char filename[10];

@@ -67,7 +67,7 @@ public:
     void setCurrentLabel( const char *label );
     void gosubReal( const char *label, char *next_script, bool textgosub_flag=false );
 
-    FILE *fopen(const char *path, const char *mode);
+    FILE *fopen(const char *path, const char *mode, bool use_save_dir=false);
     void saveGlovalData();
 
     /* Command */
@@ -93,6 +93,7 @@ public:
     int selectcolorCommand();
     int savenumberCommand();
     int savenameCommand();
+    int savedirCommand();
     int rubyonCommand();
     int rubyoffCommand();
     int roffCommand();
@@ -227,6 +228,7 @@ protected:
     int debug_level;
 
     char *archive_path;
+    char *save_dir;
     char *nsa_path;
     int nsa_offset;
     bool globalon_flag;

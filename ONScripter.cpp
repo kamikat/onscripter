@@ -299,6 +299,13 @@ void ONScripter::setArchivePath(const char *path)
     sprintf( archive_path, RELATIVEPATH "%s%c", path, DELIMITER );
 }
 
+void ONScripter::setSaveDir(const char *path)
+{
+    if (save_dir) delete[] save_dir;
+    save_dir = new char[ RELATIVEPATHLENGTH + strlen(path) + 2 ];
+    sprintf( save_dir, RELATIVEPATH "%s%c", path, DELIMITER );
+}
+
 void ONScripter::setFullscreenMode()
 {
     fullscreen_mode = true;
