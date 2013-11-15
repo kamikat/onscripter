@@ -558,9 +558,9 @@ void ONScripter::refreshSurface( SDL_Surface *surface, SDL_Rect *clip_src, int r
 }
 
 void ONScripter::refreshSprite( int sprite_no, bool active_flag, int cell_no,
-                                     SDL_Rect *check_src_rect, SDL_Rect *check_dst_rect )
+                                SDL_Rect *check_src_rect, SDL_Rect *check_dst_rect )
 {
-    if ( sprite_info[sprite_no].image_name && 
+    if ( sprite_info[sprite_no].image_surface && 
          ( sprite_info[ sprite_no ].visible != active_flag ||
            (cell_no >= 0 && sprite_info[ sprite_no ].current_cell != cell_no ) ||
            AnimationInfo::doClipping(check_src_rect, &sprite_info[ sprite_no ].pos) == 0 ||
