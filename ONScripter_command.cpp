@@ -3178,10 +3178,16 @@ int ONScripter::btnwaitCommand()
         if (is_exbtn_enabled) decodeExbtnControl( exbtn_d_button_link.exbtn_ctl[1], &check_src_rect );
     }
 
-    if (textbtn_flag && (skip_mode & SKIP_NORMAL || 
-                         (skip_mode & SKIP_TO_EOP && (textgosub_clickstr_state & 0x03) == CLICK_WAIT) || 
-                         ctrl_pressed_status) ){
+    if ((textbtn_flag || bexec_flag) && 
+        (skip_mode & SKIP_NORMAL || 
+         (skip_mode & SKIP_TO_EOP && (textgosub_clickstr_state & 0x03) == CLICK_WAIT) || 
+         ctrl_pressed_status) ){
         current_button_state.button = 0;
+        if (skip_mode & SKIP_NORMAL || 
+            (skip_mode & SKIP_TO_EOP && (textgosub_clickstr_state & 0x03) == CLICK_WAIT))
+            sprintf(current_button_state.str, "SKIP");
+        else
+            sprintf(current_button_state.str, "CTRL");
     }
     else{
         shortcut_mouse_line = 0;
