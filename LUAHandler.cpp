@@ -559,11 +559,16 @@ void LUAHandler::init(ONScripter *ons, ScriptHandler *sh)
     this->ons = ons;
     this->sh = sh;
     
-    state = lua_open();
+    state = luaL_newstate();
     luaL_openlibs(state);
 
+#if LUA_VERSION_NUM >= 502
+    lua_pushglobaltable(state);
+    luaL_setfuncs(state, lua_lut, 0);
+#else
     lua_pushvalue(state, LUA_GLOBALSINDEX);
     luaL_register(state, NULL, lua_lut);
+#endif
     
     lua_pushlightuserdata(state, this);
     lua_setglobal(state, ONS_LUA_HANDLER_PTR);
