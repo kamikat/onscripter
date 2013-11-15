@@ -356,7 +356,7 @@ protected:
             if (text) delete[] text;
             if (tag)  delete[] tag;
         }
-        int add(char ch){
+        char add(char ch){
             if (text_count >= max_text){
                 char *text2 = new char[max_text*2];
                 memcpy(text2, text, max_text);
@@ -365,7 +365,7 @@ protected:
                 max_text *= 2;
             }
             text[text_count++] = ch;
-            return 0;
+            return ch;
         };
     } *page_list, *start_page, *current_page; // ring buffer
     int  max_page_list;

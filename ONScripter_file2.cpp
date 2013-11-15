@@ -400,10 +400,7 @@ int ONScripter::loadSaveFile2( int file_version )
     start_page = current_page;
     for ( i=0 ; i<text_num ; i++ ){
         clearCurrentPage();
-        do{
-            current_page->text[current_page->text_count] = readChar();
-        }
-        while( current_page->text[current_page->text_count++] );
+        while(current_page->add(readChar()));
         if (file_version == 203) readChar(); // 0
         current_page->text_count--;
         current_page = current_page->next;
