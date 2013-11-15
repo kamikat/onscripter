@@ -82,6 +82,10 @@ void playVideoAndroid(const char *filename)
 }
 #endif
 
+#if defined(IOS)
+extern "C" void playVideoIOS(const char *filename, bool click_flag, bool loop_flag);
+#endif
+
 #if defined(USE_AVIFILE)
 #include "AVIWrapper.h"
 #endif
@@ -254,6 +258,14 @@ int ONScripter::playMPEG(const char *filename, bool click_flag, bool loop_flag)
 
 #ifdef ANDROID
     playVideoAndroid(filename);
+    return 0;
+#endif
+
+#ifdef IOS
+    char *absolute_filename = new char[ strlen(archive_path) + strlen(filename) + 1 ];
+    sprintf( absolute_filename, "%s%s", archive_path, filename );
+    playVideoIOS(absolute_filename, click_flag, loop_flag);
+    delete[] absolute_filename;
     return 0;
 #endif
 

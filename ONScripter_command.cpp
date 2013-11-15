@@ -935,22 +935,16 @@ int ONScripter::savescreenshotCommand()
     }
 
     const char *buf = script_h.readStr();
-    const char *ext = NULL;
-    if (buf) ext = strrchr( buf, '.' );
-    if ( ext && (!strcmp( ext+1, "BMP" ) || !strcmp( ext+1, "bmp" ) ) ){
-        char filename[256];
-        sprintf( filename, "%s%s", archive_path, buf );
-        for ( unsigned int i=0 ; i<strlen( filename ) ; i++ )
-            if ( filename[i] == '/' || filename[i] == '\\' )
-                filename[i] = DELIMITER;
+    char filename[256];
+    sprintf( filename, "%s%s", archive_path, buf );
+    for ( unsigned int i=0 ; i<strlen( filename ) ; i++ )
+        if ( filename[i] == '/' || filename[i] == '\\' )
+            filename[i] = DELIMITER;
 
-        SDL_Surface *surface = AnimationInfo::alloc32bitSurface( screenshot_w, screenshot_h, texture_format );
-        resizeSurface( screenshot_surface, surface );
-        SDL_SaveBMP( surface, filename );
-        SDL_FreeSurface( surface );
-    }
-    else
-        printf("savescreenshot: file %s is not supported.\n", buf );
+    SDL_Surface *surface = AnimationInfo::alloc32bitSurface( screenshot_w, screenshot_h, texture_format );
+    resizeSurface( screenshot_surface, surface );
+    SDL_SaveBMP( surface, filename );
+    SDL_FreeSurface( surface );
 
     return RET_CONTINUE;
 }

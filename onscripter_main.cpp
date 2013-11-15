@@ -32,6 +32,7 @@ ONScripter ons;
 #import "DataCopier.h"
 #import "DataDownloader.h"
 #import "ScriptSelector.h"
+#import "MoviePlayer.h"
 #endif
 
 #if defined(PSP)
@@ -129,6 +130,16 @@ JAVA_EXPORT_NAME(ONScripter_nativeGetHeight) ( JNIEnv*  env, jobject thiz )
 {
 	return ons.getHeight();
 }
+}
+#endif
+
+#if defined(IOS)
+extern "C" void playVideoIOS(const char *filename, bool click_flag, bool loop_flag)
+{
+    NSString *str = [[NSString alloc] initWithUTF8String:filename];
+    id obj = [MoviePlayer alloc];
+    [[obj init] play:str click:click_flag loop:loop_flag];
+    [obj release];
 }
 #endif
 
