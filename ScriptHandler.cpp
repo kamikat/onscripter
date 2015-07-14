@@ -1085,10 +1085,16 @@ void ScriptHandler::readConfiguration()
     variable_range = 4096;
     global_variable_border = 200;
 
-    if (script_buffer[0] != ';') return;
+    char *buf = script_buffer;
+    while ( buf < script_buffer + script_buffer_length ){
+        if (*buf == ';') break;
+        if (IS_TWO_BYTE(*buf)) buf++;
+        buf++;
+    }
     
-    char *buf = script_buffer+1;
-
+    while ( ++buf >= script_buffer + script_buffer_length ) return;
+    
+    SKIP_SPACE(buf);
     bool config_flag = false;
     if (buf[0] == '$'){
         config_flag = true;

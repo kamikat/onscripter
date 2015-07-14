@@ -54,6 +54,31 @@
 #define MESSAGE_CANCEL "ƒLƒƒƒ“ƒZƒ‹"
 #endif
 
+#ifdef ANDROID
+#include <stdarg.h>
+static int osprintf(char *str, const char *format, ...)
+{
+    str[0] = 0;
+    va_list list;
+    va_start( list, format );
+    while(*format){
+        if (IS_TWO_BYTE(*format)){
+            strncat(str, format, 2);
+            format += 2;
+        }
+        else if (format[0] == '%' && format[1] == 's'){
+            strcat(str, va_arg(list, char*));
+            format += 2;
+        }
+        else{
+            strncat(str, format++, 1);
+        }
+    }
+    va_end( list );
+}
+#define sprintf osprintf
+#endif
+
 void ONScripter::enterSystemCall()
 {
     shelter_button_link = root_button_link.next;
