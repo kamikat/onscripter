@@ -2,7 +2,7 @@
  * 
  *  ONScripter_command.cpp - Command executer of ONScripter
  *
- *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2015 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -578,6 +578,11 @@ int ONScripter::spbtnCommand()
 
     int sprite_no = script_h.readInt();
     int no        = script_h.readInt();
+    if (no < 1 || 
+        sprite_no < 0 ||
+        sprite_no >= MAX_SPRITE_NUM || 
+        sprite_info[sprite_no].image_surface == NULL)
+        return RET_CONTINUE;
 
     if ( cellcheck_flag ){
         if ( sprite_info[ sprite_no ].num_of_cells < 2 ) return RET_CONTINUE;
@@ -2637,7 +2642,11 @@ int ONScripter::exbtnCommand()
         sprite_no = script_h.readInt();
         no = script_h.readInt();
 
-        if (( cellcheck_flag && sprite_info[ sprite_no ].num_of_cells < 2) ||
+        if (no < 1 || 
+            sprite_no < 0 ||
+            sprite_no >= MAX_SPRITE_NUM || 
+            sprite_info[sprite_no].image_surface == NULL ||
+            ( cellcheck_flag && sprite_info[ sprite_no ].num_of_cells < 2) ||
             (!cellcheck_flag && sprite_info[ sprite_no ].num_of_cells == 0)){
             script_h.readStr();
             return RET_CONTINUE;
@@ -3179,14 +3188,15 @@ int ONScripter::btnwaitCommand()
     while( bl ){
         bl->show_flag = 0;
         if ( bl->button_type == ButtonLink::SPRITE_BUTTON ){
-            sprite_info[ bl->sprite_no ].visible = true;
             if ( bl->exbtn_ctl[0] ){
                 SDL_Rect check_src_rect = bl->image_rect;
                 SDL_Rect check_dst_rect = {0, 0, 0, 0};
                 decodeExbtnControl( bl->exbtn_ctl[0], &check_src_rect, &check_dst_rect );
             }
-            else
+            else{
+                sprite_info[ bl->sprite_no ].visible = true;
                 sprite_info[ bl->sprite_no ].setCell(0);
+            }
         }
         else if ( bl->button_type == ButtonLink::TMP_SPRITE_BUTTON ){
             bl->show_flag = 1;
@@ -3209,7 +3219,9 @@ int ONScripter::btnwaitCommand()
         (skip_mode & SKIP_NORMAL || 
          (skip_mode & SKIP_TO_EOP && (textgosub_clickstr_state & 0x03) == CLICK_WAIT) || 
          ctrl_pressed_status) ){
+        waitEventSub(0); // for checking keyup event
         current_button_state.button = 0;
+        if (bexec_flag) current_button_state.button = -1;
         if (skip_mode & SKIP_NORMAL || 
             (skip_mode & SKIP_TO_EOP && (textgosub_clickstr_state & 0x03) == CLICK_WAIT))
             sprintf(current_button_state.str, "SKIP");
@@ -3268,7 +3280,7 @@ int ONScripter::btnwaitCommand()
     if (bexec_flag){
         setStr( &script_h.getVariableData(script_h.pushed_variable.var_no).str, current_button_state.str );
         if (bexec_int_flag){
-            if (current_button_state.button > 0)
+            if (current_button_state.button >= 0)
                 script_h.setInt( &script_h.current_variable, current_button_state.button );
             else
                 script_h.setInt( &script_h.current_variable, -1);
@@ -3394,6 +3406,9 @@ int ONScripter::btnCommand()
 int ONScripter::bspCommand()
 {
     int no = script_h.readInt();
+    if (no < 0 || no >= MAX_SPRITE_NUM || 
+        sprite_info[no].image_surface == NULL)
+        return RET_CONTINUE;
 
     ButtonLink *bl = new ButtonLink();
     root_button_link.insert( bl );
@@ -3560,6 +3575,13 @@ int ONScripter::bgCommand()
     EffectLink *el = parseEffect(true);
     if (setEffect(el, true, true)) return RET_CONTINUE;
     while (doEffect(el));
+
+    return RET_CONTINUE;
+}
+
+int ONScripter::bdownCommand()
+{
+    btndown_flag = true;
 
     return RET_CONTINUE;
 }

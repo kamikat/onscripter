@@ -2,7 +2,7 @@
  * 
  *  ONScripter_lut.cpp - command lookup-table for ONScripter
  *
- *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2015 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -363,7 +363,7 @@ static ONScripter::FuncLUT func_lut[] = {
     {"bgcopy",			&ONScripter::bgcopyCommand},
     {"bg",				&ONScripter::bgCommand},
     {"bexec",			&ONScripter::btnwaitCommand},
-    {"bdown",			&ONScripter::btndownCommand},
+    {"bdown",			&ONScripter::bdownCommand},
     {"bdef",			&ONScripter::exbtnCommand},
     {"bcursor",			&ONScripter::getcursorCommand},
     {"bclear",			&ONScripter::btndefCommand},

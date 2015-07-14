@@ -2,7 +2,7 @@
  * 
  *  ONScripter.h - Execution block parser of ONScripter
  *
- *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2015 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -266,6 +266,7 @@ public:
     int bltCommand();
     int bgcopyCommand();
     int bgCommand();
+    int bdownCommand();
     int barclearCommand();
     int barCommand();
     int aviCommand();

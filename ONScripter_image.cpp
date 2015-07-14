@@ -2,7 +2,7 @@
  * 
  *  ONScripter_image.cpp - Image processing in ONScripter
  *
- *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2015 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -159,7 +159,7 @@ SDL_Surface *ONScripter::createSurfaceFromFile(char *filename, bool *has_alpha, 
         tmp = IMG_LoadJPG_RW(src);
     }
 
-    if (has_alpha){
+    if (tmp && has_alpha){
         if (tmp->format->Amask || is_png)
             *has_alpha = true;
         else

@@ -2,7 +2,7 @@
  * 
  *  ONScripter_event.cpp - Event handler of ONScripter
  *
- *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2015 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -472,10 +472,27 @@ bool ONScripter::mousePressEvent( SDL_MouseButtonEvent *event )
     else if ( event->button == SDL_BUTTON_LEFT &&
               ( event->type == SDL_MOUSEBUTTONUP || btndown_flag ) ){
         current_button_state.button = current_over_button;
-        if (current_over_button == 0)
+        if (current_over_button == -1){
+            if (!bexec_flag) current_button_state.button = 0;
             sprintf(current_button_state.str, "LCLICK");
-        else
+        }
+        else{
             sprintf(current_button_state.str, "S%d", current_over_button);
+            if (bexec_flag && current_button_link){
+                ButtonLink *cbl = current_button_link;
+                if ( current_button_link->exbtn_ctl[2] ){
+                    SDL_Rect check_src_rect = cbl->image_rect;
+                    SDL_Rect check_dst_rect = {0, 0, 0, 0};
+                    decodeExbtnControl( cbl->exbtn_ctl[2], &check_src_rect, &check_dst_rect );
+                }
+                else{
+                    sprite_info[ cbl->sprite_no ].visible = true;
+                    sprite_info[ cbl->sprite_no ].setCell(2);
+                    dirty_rect.add( cbl->image_rect );
+                }
+                flush( refreshMode() );
+            }
+        }
             
         if ( event->type == SDL_MOUSEBUTTONDOWN )
             current_button_state.down_flag = true;
@@ -791,15 +808,33 @@ bool ONScripter::keyPressEvent( SDL_KeyboardEvent *event )
              event->keysym.sym == SDLK_KP_ENTER ||
              (spclclk_flag && event->keysym.sym == SDLK_SPACE) ){
             current_button_state.button = current_over_button;
-            if (current_over_button == 0)
+            if (current_over_button == -1){
+                if (!bexec_flag) current_button_state.button = 0;
                 sprintf(current_button_state.str, "RETURN");
-            else
+            }
+            else{
                 sprintf(current_button_state.str, "S%d", current_over_button);
+                if (bexec_flag && current_button_link){
+                    ButtonLink *cbl = current_button_link;
+                    if ( current_button_link->exbtn_ctl[2] ){
+                        SDL_Rect check_src_rect = cbl->image_rect;
+                        SDL_Rect check_dst_rect = {0, 0, 0, 0};
+                        decodeExbtnControl( cbl->exbtn_ctl[2], &check_src_rect, &check_dst_rect );
+                    }
+                    else{
+                        sprite_info[ cbl->sprite_no ].visible = true;
+                        sprite_info[ cbl->sprite_no ].setCell(2);
+                        dirty_rect.add( cbl->image_rect );
+                    }
+                    flush( refreshMode() );
+                }
+            }
             if ( event->type == SDL_KEYDOWN )
                 current_button_state.down_flag = true;
         }
         else{
-            current_button_state.button = 0;
+            current_button_state.button = -1;
+            if (!bexec_flag) current_button_state.button = 0;
             sprintf(current_button_state.str, "SPACE");
         }
         playClickVoice();

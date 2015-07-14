@@ -2,7 +2,7 @@
  *
  *  ScriptHandler.cpp - Script manipulation class
  *
- *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2015 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -128,7 +128,7 @@ void ScriptHandler::reset()
 void ScriptHandler::setSaveDir(const char *path)
 {
     if (save_dir) delete[] save_dir;
-    save_dir = new char[ strlen(path) ];
+    save_dir = new char[ strlen(path)+1 ];
     strcpy(save_dir, path);
 }
 
@@ -1187,6 +1187,7 @@ int ScriptHandler::labelScript()
                 buf++;
                 current_line++;
             }
+            SKIP_SPACE( buf );
             label_info[ label_counter ].start_address = buf;
         }
         else{

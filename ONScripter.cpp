@@ -2,7 +2,7 @@
  * 
  *  ONScripter.cpp - Execution block parser of ONScripter
  *
- *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2015 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -538,8 +538,9 @@ void ONScripter::reset()
         resize_buffer_size = 16;
     }
 
-    current_over_button = 0;
+    current_over_button = -1;
     shift_over_button = -1;
+    current_button_link = NULL;
     num_fingers = 0;
     variable_edit_mode = NOT_EDIT_MODE;
 
@@ -698,7 +699,7 @@ void ONScripter::mouseOverCheck( int x, int y )
 
     /* ---------------------------------------- */
     /* Check button */
-    int button = 0;
+    int button = -1;
     ButtonLink *bl = root_button_link.next, *max_bl = NULL;
     unsigned int max_alpha = 0;
     while( bl ){
@@ -737,16 +738,17 @@ void ONScripter::mouseOverCheck( int x, int y )
 
         SDL_Rect check_src_rect = {0, 0, 0, 0};
         SDL_Rect check_dst_rect = {0, 0, 0, 0};
-        if ( current_over_button != 0 ){
+        if ( current_over_button != -1 ){
             ButtonLink *cbl = current_button_link;
             cbl->show_flag = 0;
             check_src_rect = cbl->image_rect;
             if ( cbl->button_type == ButtonLink::SPRITE_BUTTON ){
-                sprite_info[ cbl->sprite_no ].visible = true;
                 if ( cbl->exbtn_ctl[0] )
                     decodeExbtnControl( cbl->exbtn_ctl[0], &check_src_rect, &check_dst_rect );
-                else
+                else{
+                    sprite_info[ cbl->sprite_no ].visible = true;
                     sprite_info[ cbl->sprite_no ].setCell(0);
+                }
             }
             else if ( cbl->button_type == ButtonLink::TMP_SPRITE_BUTTON ){
                 cbl->show_flag = 1;
@@ -776,11 +778,12 @@ void ONScripter::mouseOverCheck( int x, int y )
             }
             check_dst_rect = bl->image_rect;
             if ( bl->button_type == ButtonLink::SPRITE_BUTTON ){
-                sprite_info[ bl->sprite_no ].setCell(1);
+                if (!bexec_flag || !bl->exbtn_ctl[1]){
+                    sprite_info[ bl->sprite_no ].visible = true;
+                    sprite_info[ bl->sprite_no ].setCell(1);
+                }
                 if ( bl->exbtn_ctl[1] )
                     decodeExbtnControl( bl->exbtn_ctl[1], &check_src_rect, &check_dst_rect );
-                else
-                    sprite_info[ bl->sprite_no ].visible = true;
             }
             else if ( bl->button_type == ButtonLink::TMP_SPRITE_BUTTON ){
                 bl->show_flag = 1;
@@ -935,7 +938,7 @@ void ONScripter::deleteButtonLink()
     while( b1 ){
         ButtonLink *b2 = b1;
         b1 = b1->next;
-        if (b2 == current_button_link) current_over_button = 0;
+        if (b2 == current_button_link) current_over_button = -1;
         delete b2;
     }
     root_button_link.next = NULL;
@@ -952,7 +955,7 @@ void ONScripter::deleteButtonLink()
 void ONScripter::refreshMouseOverButton()
 {
     int mx, my;
-    current_over_button = 0;
+    current_over_button = -1;
     shift_over_button = -1;
     current_button_link = root_button_link.next;
     SDL_GetMouseState( &mx, &my );
