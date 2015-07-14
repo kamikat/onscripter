@@ -2,7 +2,7 @@
  * 
  *  onscripter_main.cpp -- main function of ONScripter
  *
- *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2015 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -204,6 +204,8 @@ int main( int argc, char **argv )
 
     // output files are stored under /Documents
     dpath = [[dpaths objectAtIndex:0] stringByAppendingPathComponent:[cpath lastPathComponent]];
+    NSFileManager *fm = [NSFileManager defaultManager];
+    [fm createDirectoryAtPath:dpath withIntermediateDirectories: YES attributes: nil error:nil];
     strcpy(filename, [dpath UTF8String]);
     ons.setSaveDir(filename);
 #endif

@@ -116,6 +116,7 @@ public:
     int textonCommand();
     int textoffCommand();
     int texthideCommand();
+    int textcolorCommand();
     int textclearCommand();
     int texecCommand();
     int tateyokoCommand();

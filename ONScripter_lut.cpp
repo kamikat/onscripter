@@ -57,6 +57,7 @@ static ONScripter::FuncLUT func_lut[] = {
     {"textoff",			&ONScripter::textoffCommand},
     {"texthide",		&ONScripter::texthideCommand},
     {"textgosub",		&ONScripter::textgosubCommand},
+    {"textcolor",		&ONScripter::textcolorCommand},
     {"textclear",		&ONScripter::textclearCommand},
     {"textbtnwait",		&ONScripter::btnwaitCommand},
     {"texec",			&ONScripter::texecCommand},

@@ -204,6 +204,7 @@ const char *ScriptHandler::readToken()
                 if (ch == 0x0a || ch == '\0') break;
                 addStringBuffer( ch );
                 buf++;
+                if (!wait_script && checkClickstr(buf-2)==2) wait_script = buf;
             }
             else{
                 if (ch == '%' || ch == '?'){

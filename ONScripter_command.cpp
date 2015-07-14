@@ -267,6 +267,13 @@ int ONScripter::texthideCommand()
     return RET_CONTINUE;
 }
 
+int ONScripter::textcolorCommand()
+{
+    readColor( &sentence_font.color, script_h.readStr() );
+
+    return RET_CONTINUE;
+}
+
 int ONScripter::textclearCommand()
 {
     newPage();
@@ -2889,11 +2896,13 @@ int ONScripter::drawCommand()
 
 int ONScripter::delayCommand()
 {
+    int val = script_h.readInt();
+    
     if (skip_mode & SKIP_NORMAL || ctrl_pressed_status)
         return RET_CONTINUE;
 
     event_mode = WAIT_TIMER_MODE | WAIT_INPUT_MODE;
-    waitEvent( script_h.readInt() );
+    waitEvent( val );
 
     return RET_CONTINUE;
 }
