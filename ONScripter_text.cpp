@@ -723,8 +723,10 @@ bool ONScripter::checkLineBreak(const char *buf, FontInfo *fi)
     if (!is_kinsoku) return false;
     
     // check start kinsoku
-    if (isStartKinsoku( buf+2 )){
+    if (isStartKinsoku( buf+2 ) ||
+        buf[2]=='_' && isStartKinsoku( buf+3 )){
         const char *buf2 = buf;
+        if (buf2[2] == '_') buf2++;
         int i = 2;
         while (!fi->isEndOfLine(i)){
             if      ( buf2[i+2] == 0x0a || buf2[i+2] == 0 ) break;
