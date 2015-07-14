@@ -77,7 +77,7 @@ void playVideoAndroid(const char *filename)
         jc[i] = filename[i];
     jcharArray jca = jniEnv->NewCharArray(strlen(filename));
     jniEnv->SetCharArrayRegion(jca, 0, strlen(filename), jc);
-    jniEnv->CallIntMethod( JavaONScripter, JavaPlayVideo, jca );
+    jniEnv->CallVoidMethod( JavaONScripter, JavaPlayVideo, jca );
     delete[] jc;
 }
 #endif

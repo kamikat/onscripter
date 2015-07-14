@@ -2,7 +2,7 @@
  * 
  *  ONScripter_animation.cpp - Methods to manipulate AnimationInfo
  *
- *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
