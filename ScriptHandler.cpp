@@ -125,6 +125,13 @@ void ScriptHandler::reset()
     internal_current_script = NULL;
 }
 
+void ScriptHandler::setSaveDir(const char *path)
+{
+    if (save_dir) delete[] save_dir;
+    save_dir = new char[ strlen(path) ];
+    strcpy(save_dir, path);
+}
+
 FILE *ScriptHandler::fopen( const char *path, const char *mode, bool use_save_dir )
 {
     char *filename;
@@ -802,9 +809,9 @@ int ScriptHandler::getStringFromInteger( char *buffer, int no, int num_column, b
 #endif    
 }
 
-int ScriptHandler::openScript(char *path, char *spath)
+int ScriptHandler::openScript(char *path)
 {
-    if (readScript(path, spath) < 0) return -1;
+    if (readScript(path) < 0) return -1;
     readConfiguration();
     variable_data = new VariableData[variable_range];
     return labelScript();
@@ -929,14 +936,10 @@ ScriptHandler::VariableData &ScriptHandler::getVariableData(int no)
 // ----------------------------------------
 // Private methods
 
-int ScriptHandler::readScript( char *path, char *spath )
+int ScriptHandler::readScript( char *path )
 {
     archive_path = new char[strlen(path) + 1];
     strcpy( archive_path, path );
-    if (spath){
-        save_dir = new char[strlen(spath) + 1];
-        strcpy( save_dir, spath );
-    }
 
     FILE *fp = NULL;
     char filename[10];

@@ -268,7 +268,7 @@ protected:
     int screen_bpp;
     char *version_str;
     int underline_value;
-    char *savedir;
+    char *save_dir_envdata;
 
     void deleteNestInfo();
     void setStr( char **dst, const char *src, int num=-1 );

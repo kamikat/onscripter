@@ -298,9 +298,11 @@ int ScriptParser::savedirCommand()
     const char *path = script_h.readStr();
 
     if (!save_dir){
-        // this is a workaround to keep save_dir set in ONScripter::setSaveDir(const char *path)
+        // a workaround not to overwrite save_dir given in command line options
         save_dir = new char[ strlen(archive_path) + strlen(path) + 2 ];
         sprintf( save_dir, "%s%s%c", archive_path, path, DELIMITER );
+        script_h.setSaveDir(save_dir);
+        setStr(&save_dir_envdata, path);
     }
     
     return RET_CONTINUE;
@@ -762,6 +764,7 @@ int ScriptParser::labellogCommand()
         errorAndExit( "labellog: not in the define section" );
 
     labellog_flag = true;
+    readLog( script_h.log_info[ScriptHandler::LABEL_LOG] );
 
     return RET_CONTINUE;
 }

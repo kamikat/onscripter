@@ -101,6 +101,7 @@ public:
     ~ScriptHandler();
 
     void reset();
+    void setSaveDir(const char *path);
     FILE *fopen( const char *path, const char *mode, bool use_save_dir=false );
     void setKeyTable( const unsigned char *key_table );
 
@@ -169,7 +170,7 @@ public:
 
     int  getStringFromInteger( char *buffer, int no, int num_column, bool is_zero_inserted=false );
 
-    int  openScript( char *path, char *spath );
+    int  openScript( char *path );
 
     LabelInfo lookupLabel( const char* label );
     LabelInfo lookupLabelNext( const char* label );
@@ -279,7 +280,7 @@ private:
         };
     };
     
-    int  readScript(char *path, char *spath);
+    int  readScript(char *path);
     int  readScriptSub(FILE *fp, char **buf, int encrypt_mode);
     void readConfiguration();
     int  labelScript();

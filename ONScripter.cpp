@@ -304,6 +304,7 @@ void ONScripter::setSaveDir(const char *path)
     if (save_dir) delete[] save_dir;
     save_dir = new char[ RELATIVEPATHLENGTH + strlen(path) + 2 ];
     sprintf( save_dir, RELATIVEPATH "%s%c", path, DELIMITER );
+    script_h.setSaveDir(save_dir);
 }
 
 void ONScripter::setFullscreenMode()
@@ -484,6 +485,7 @@ int ONScripter::init()
 
     for (i=0 ; i<MAX_PARAM_NUM ; i++) bar_info[i] = prnum_info[i] = NULL;
 
+    loadEnvData();
     defineresetCommand();
 
     readToken();
@@ -492,8 +494,6 @@ int ONScripter::init()
         fprintf( stderr, "can't open font file: %s\n", font_file );
         return -1;
     }
-
-    loadEnvData();
     
     return 0;
 }
@@ -1169,7 +1169,7 @@ void ONScripter::loadEnvData()
     cdaudio_on_flag = true;
     default_cdrom_drive = NULL;
     kidokumode_flag = true;
-    setStr( &savedir, NULL );
+    setStr( &save_dir_envdata, NULL );
     automode_time = DEFAULT_AUTOMODE_TIME;
     
     if (loadFileIOBuf( "envdata" ) > 0){
@@ -1187,7 +1187,13 @@ void ONScripter::loadEnvData()
         music_volume = DEFAULT_VOLUME - readInt();
         if (readInt() == 0) kidokumode_flag = false;
         readInt();
-        readStr( &savedir );
+        readStr( &save_dir_envdata ); // save_dir_envdata is not used directly
+        if (!save_dir && save_dir_envdata){
+            // a workaround not to overwrite save_dir given in command line options
+            save_dir = new char[ strlen(archive_path) + strlen(save_dir_envdata) + 2 ];
+            sprintf( save_dir, "%s%s%c", archive_path, save_dir_envdata, DELIMITER );
+            script_h.setSaveDir(save_dir);
+        }
         automode_time = readInt();
     }
     else{
@@ -1213,7 +1219,7 @@ void ONScripter::saveEnvData()
         writeInt( DEFAULT_VOLUME - music_volume, output_flag );
         writeInt( kidokumode_flag?1:0, output_flag );
         writeInt( 0, output_flag ); // ?
-        writeStr( savedir, output_flag );
+        writeStr( save_dir_envdata, output_flag );
         writeInt( automode_time, output_flag );
 
         if (i==1) break;

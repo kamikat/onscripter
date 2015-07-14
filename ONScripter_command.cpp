@@ -2461,6 +2461,9 @@ int ONScripter::getcselnumCommand()
 
 int ONScripter::gameCommand()
 {
+    if ( current_mode != DEFINE_MODE )
+        errorAndExit( "game: not in the define section" );
+
     int i;
     current_mode = NORMAL_MODE;
 
@@ -2869,6 +2872,8 @@ int ONScripter::defineresetCommand()
 #ifdef USE_LUA
     lua_handler.init(this, &script_h);
 #endif    
+
+    current_mode = DEFINE_MODE;
 
     return RET_CONTINUE;
 }

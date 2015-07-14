@@ -24,7 +24,7 @@
 #include "ScriptParser.h"
 
 #define VERSION_STR1 "ONScripter"
-#define VERSION_STR2 "Copyright (C) 2001-2012 Studio O.G.A. All Rights Reserved."
+#define VERSION_STR2 "Copyright (C) 2001-2013 Studio O.G.A. All Rights Reserved."
 
 #define DEFAULT_SAVE_MENU_NAME "＜セーブ＞"
 #define DEFAULT_LOAD_MENU_NAME "＜ロード＞"
@@ -48,7 +48,7 @@ ScriptParser::ScriptParser()
     archive_path = NULL;
     save_dir = NULL;
     version_str = NULL;
-    savedir = NULL;
+    save_dir_envdata = NULL;
     nsa_path = NULL;
     nsa_offset = 0;
     key_table = NULL;
@@ -94,7 +94,7 @@ ScriptParser::~ScriptParser()
     if (file_io_buf) delete[] file_io_buf;
     if (save_data_buf) delete[] save_data_buf;
 
-    if (savedir) delete[] savedir;
+    if (save_dir_envdata) delete[] save_dir_envdata;
 }
 
 void ScriptParser::reset()
@@ -145,8 +145,6 @@ void ScriptParser::reset()
                            strlen("\n")+
                            +1];
     sprintf( version_str, "%s\n%s\n", VERSION_STR1, VERSION_STR2 );
-    if (savedir) delete[] savedir;
-    savedir = NULL;
     z_order = 499;
 
     textgosub_label = NULL;
@@ -247,8 +245,6 @@ void ScriptParser::reset()
     last_effect_link = &root_effect_link;
     last_effect_link->next = NULL;
 
-    readLog( script_h.log_info[ScriptHandler::LABEL_LOG] );
-    
     current_mode = DEFINE_MODE;
 }
 
@@ -261,7 +257,7 @@ int ScriptParser::openScript()
         script_h.cBR->open();
     }
     
-    if ( script_h.openScript( archive_path, save_dir ) ) return -1;
+    if ( script_h.openScript( archive_path ) ) return -1;
 
     screen_width  = script_h.screen_width;
     screen_height = script_h.screen_height;
