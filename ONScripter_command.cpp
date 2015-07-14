@@ -1532,8 +1532,7 @@ int ONScripter::menu_windowCommand()
 #if !defined(PSP)
         if ( !SDL_WM_ToggleFullScreen( screen_surface ) ){
             screen_surface = SDL_SetVideoMode( screen_device_width, screen_device_height, screen_bpp, DEFAULT_VIDEO_SURFACE_FLAG );
-            SDL_Rect rect = {0, 0, screen_width, screen_height};
-            flushDirect( rect, refreshMode() );
+            flushDirect( screen_rect, refreshMode() );
         }
 #endif
         fullscreen_mode = false;
@@ -1548,8 +1547,7 @@ int ONScripter::menu_fullCommand()
 #if !defined(PSP)
         if ( !SDL_WM_ToggleFullScreen( screen_surface ) ){
             screen_surface = SDL_SetVideoMode( screen_device_width, screen_device_height, screen_bpp, DEFAULT_VIDEO_SURFACE_FLAG|SDL_FULLSCREEN );
-            SDL_Rect rect = {0, 0, screen_width, screen_height};
-            flushDirect( rect, refreshMode() );
+            flushDirect( screen_rect, refreshMode() );
         }
 #endif
         fullscreen_mode = true;
@@ -2743,7 +2741,10 @@ int ONScripter::dvCommand()
 
 int ONScripter::drawtextCommand()
 {
-    SDL_Rect clip = {0, 0, accumulation_surface->w, accumulation_surface->h};
+    SDL_Rect clip;
+    clip.x = clip.y = 0;
+    clip.w = accumulation_surface->w;
+    clip.h = accumulation_surface->h;
     text_info.blendOnSurface( accumulation_surface, 0, 0, clip );
     
     return RET_CONTINUE;
@@ -2774,8 +2775,7 @@ int ONScripter::drawsp3Command()
         ai->inv_mat[1][1] =  ai->mat[0][0] * 1000 / denom;
     }
 
-    SDL_Rect clip = {0, 0, screen_width, screen_height};
-    ai->blendOnSurface2( accumulation_surface, x, y, clip, alpha );
+    ai->blendOnSurface2( accumulation_surface, x, y, screen_rect, alpha );
     ai->setCell(old_cell_no);
 
     return RET_CONTINUE;
@@ -2797,8 +2797,7 @@ int ONScripter::drawsp2Command()
     ai->calcAffineMatrix();
     ai->setCell(cell_no);
 
-    SDL_Rect clip = {0, 0, screen_width, screen_height};
-    ai->blendOnSurface2( accumulation_surface, ai->pos.x, ai->pos.y, clip, alpha );
+    ai->blendOnSurface2( accumulation_surface, ai->pos.x, ai->pos.y, screen_rect, alpha );
 
     return RET_CONTINUE;
 }
@@ -2814,7 +2813,10 @@ int ONScripter::drawspCommand()
     AnimationInfo *ai = &sprite_info[sprite_no];
     int old_cell_no = ai->current_cell;
     ai->setCell(cell_no);
-    SDL_Rect clip = {0, 0, accumulation_surface->w, accumulation_surface->h};
+    SDL_Rect clip;
+    clip.x = clip.y = 0;
+    clip.w = accumulation_surface->w;
+    clip.h = accumulation_surface->h;
     ai->blendOnSurface( accumulation_surface, x, y, clip, alpha );
     ai->setCell(old_cell_no);
 
@@ -2841,7 +2843,10 @@ int ONScripter::drawclearCommand()
 
 int ONScripter::drawbgCommand()
 {
-    SDL_Rect clip = {0, 0, accumulation_surface->w, accumulation_surface->h};
+    SDL_Rect clip;
+    clip.x = clip.y = 0;
+    clip.w = accumulation_surface->w;
+    clip.h = accumulation_surface->h;
     bg_info.blendOnSurface( accumulation_surface, bg_info.pos.x, bg_info.pos.y, clip );
     
     return RET_CONTINUE;
@@ -2858,17 +2863,14 @@ int ONScripter::drawbg2Command()
     bi.rot     = script_h.readInt();
     bi.calcAffineMatrix();
 
-    SDL_Rect clip = {0, 0, screen_width, screen_height};
-    bi.blendOnSurface2( accumulation_surface, bi.pos.x, bi.pos.y,
-                        clip, 255 );
+    bi.blendOnSurface2( accumulation_surface, bi.pos.x, bi.pos.y, screen_rect, 255 );
 
     return RET_CONTINUE;
 }
 
 int ONScripter::drawCommand()
 {
-    SDL_Rect rect = {0, 0, screen_width, screen_height};
-    flushDirect( rect, REFRESH_NONE_MODE );
+    flushDirect( screen_rect, REFRESH_NONE_MODE );
     dirty_rect.clear();
     
     return RET_CONTINUE;
@@ -3199,7 +3201,7 @@ int ONScripter::btnwaitCommand()
     }
 
     if (is_exbtn_enabled && exbtn_d_button_link.exbtn_ctl[1]){
-        SDL_Rect check_src_rect = {0, 0, screen_width, screen_height};
+        SDL_Rect check_src_rect = screen_rect;
         if (is_exbtn_enabled) decodeExbtnControl( exbtn_d_button_link.exbtn_ctl[1], &check_src_rect );
     }
 
@@ -3423,8 +3425,8 @@ int ONScripter::brCommand()
 
 int ONScripter::bltCommand()
 {
-    int dx,dy,dw,dh;
-    int sx,sy,sw,sh;
+    Sint16 dx,dy,sx,sy;
+    Uint16 dw,dh,sw,sh;
 
     dx = script_h.readInt() * screen_ratio1 / screen_ratio2;
     dy = script_h.readInt() * screen_ratio1 / screen_ratio2;
@@ -3504,8 +3506,12 @@ int ONScripter::bltCommand()
         SDL_UnlockSurface(btndef_info.image_surface);
         SDL_UnlockSurface(accumulation_surface);
         
-        SDL_Rect dst_rect = {start_x, start_y, end_x-start_x, end_y-start_y};
-        flushDirect( (SDL_Rect&)dst_rect, REFRESH_NONE_MODE );
+        SDL_Rect dst_rect;
+        dst_rect.x = start_x;
+        dst_rect.y = start_y;
+        dst_rect.w = end_x-start_x;
+        dst_rect.h = end_y-start_y;
+        flushDirect( dst_rect, REFRESH_NONE_MODE );
     }
 
     return RET_CONTINUE;

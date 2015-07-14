@@ -37,10 +37,12 @@ extern "C" void waveCallback( int channel );
 #define DEFAULT_ENV_FONT "‚l‚r ƒSƒVƒbƒN"
 #define DEFAULT_AUTOMODE_TIME 1000
 
+#ifdef __OS2__
 static void SDL_Quit_Wrapper()
 {
     SDL_Quit();
 }
+#endif
 
 void ONScripter::initSDL()
 {
@@ -184,6 +186,10 @@ void ONScripter::initSDL()
     printf("Display: %d x %d (%d bpp)\n", screen_width, screen_height, screen_bpp);
     dirty_rect.setDimension(screen_width, screen_height);
     
+    screen_rect.x = screen_rect.y = 0;
+    screen_rect.w = screen_width;
+    screen_rect.h = screen_height;
+
     initSJIS2UTF16();
     
     wm_title_string = new char[ strlen(DEFAULT_WM_TITLE) + 1 ];
@@ -356,7 +362,10 @@ int ONScripter::openScript()
     if (is_script_read) return 0;
     is_script_read = true;
 
-    if (archive_path == NULL) archive_path = "";
+    if (archive_path == NULL){
+        archive_path = new char[1];
+        archive_path[0] = 0;
+    }
     
     if (key_exe_file){
         createKeyTable( key_exe_file );
@@ -673,8 +682,8 @@ void ONScripter::flushDirect( SDL_Rect &rect, int refresh_mode )
     SDL_RenderCopy(renderer, texture, &src_rect, &dst_rect);
     SDL_RenderPresent(renderer);
 #else
-    SDL_Rect dst_rect = rect, clip_rect = {0, 0, screen_width, screen_height};
-    if (AnimationInfo::doClipping(&dst_rect, &clip_rect) || dst_rect.w==0 && dst_rect.h==0) return;
+    SDL_Rect dst_rect = rect;
+    if (AnimationInfo::doClipping(&dst_rect, &screen_rect) || (dst_rect.w==0 && dst_rect.h==0)) return;
     SDL_BlitSurface( accumulation_surface, &dst_rect, screen_surface, &dst_rect );
     SDL_UpdateRect( screen_surface, dst_rect.x, dst_rect.y, dst_rect.w, dst_rect.h );
 #endif
@@ -1001,7 +1010,7 @@ void ONScripter::shadowTextDisplay( SDL_Surface *surface, SDL_Rect &clip )
 {
     if ( current_font->is_transparent ){
 
-        SDL_Rect rect = {0, 0, screen_width, screen_height};
+        SDL_Rect rect = screen_rect;
         if ( current_font == &sentence_font )
             rect = sentence_font_info.pos;
 

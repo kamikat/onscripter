@@ -170,7 +170,7 @@ char *ONScripter::readSaveStrFromFile( int no )
     len = len - p - 3;
     char *buf = new char[len+1];
     
-    int i;
+    unsigned int i;
     for (i=0 ; i<len ; i++)
         buf[i] = file_io_buf[p+i+1];
     buf[i] = 0;
