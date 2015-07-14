@@ -1331,6 +1331,7 @@ int ONScripter::mp3stopCommand()
         mp3fadeout_duration_internal = mp3fadeout_duration;
         mp3fade_start = SDL_GetTicks();
         timer_bgmfade_id = SDL_AddTimer(20, bgmfadeCallback, 0);
+        setStr(&fadeout_music_file_name, music_file_name);
 
         char *ext = NULL;
         if (music_file_name) ext = strrchr(music_file_name, '.');
@@ -1338,6 +1339,7 @@ int ONScripter::mp3stopCommand()
             // do not wait until fadout is finished when playing ogg
             event_mode = IDLE_EVENT_MODE;
             waitEvent(0);
+            setStr( &music_file_name, NULL ); // to ensure not to play music during fadeout
 
             return RET_CONTINUE;
         }
@@ -2887,6 +2889,9 @@ int ONScripter::drawCommand()
 
 int ONScripter::delayCommand()
 {
+    if (skip_mode & SKIP_NORMAL || ctrl_pressed_status)
+        return RET_CONTINUE;
+
     event_mode = WAIT_TIMER_MODE | WAIT_INPUT_MODE;
     waitEvent( script_h.readInt() );
 

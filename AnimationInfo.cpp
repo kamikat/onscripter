@@ -2,7 +2,7 @@
  * 
  *  AnimationInfo.cpp - General image storage class of ONScripter
  *
- *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2015 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -698,7 +698,7 @@ SDL_Surface *AnimationInfo::allocSurface( int w, int h, Uint32 texture_format )
         surface = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
 
     SDL_SetAlpha(surface, 0, SDL_ALPHA_OPAQUE);
-#if defined(USE_RENDERER) || defined(ANDROID)
+#if defined(USE_SDL_RENDERER) || defined(ANDROID)
     SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
 #endif
 

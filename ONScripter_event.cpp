@@ -266,7 +266,7 @@ void ONScripter::flushEventSub( SDL_Event &event )
             Mix_VolumeMusic( tmp * MIX_MAX_VOLUME / 100 );
         } else {
             char *ext = NULL;
-            if (music_file_name) ext = strrchr(music_file_name, '.');
+            if (fadeout_music_file_name) ext = strrchr(fadeout_music_file_name, '.');
             if (ext && (strcmp(ext+1, "OGG") && strcmp(ext+1, "ogg"))){
                 // set break event to return to script processing when playing music other than ogg
                 SDL_Event event;
@@ -1271,7 +1271,14 @@ void ONScripter::runEventLoop()
             return;
             
           case SDL_ACTIVEEVENT:
-            if ( !event.active.gain ) break;
+            if ( !event.active.gain ){
+                // the mouse cursor leaves the window
+                SDL_MouseMotionEvent mevent;
+                mevent.x = screen_device_width;
+                mevent.y = screen_device_height;
+                mouseMoveEvent( &mevent );
+                break;
+            }
 #ifdef ANDROID
             if (event.active.state == SDL_APPACTIVE){
                 screen_surface = SDL_SetVideoMode( screen_width, screen_height, screen_bpp, DEFAULT_VIDEO_SURFACE_FLAG );

@@ -471,6 +471,7 @@ int ONScripter::init()
     midi_file_name = NULL;
     midi_info  = NULL;
     music_file_name = NULL;
+    fadeout_music_file_name = NULL;
     music_buffer = NULL;
     music_info = NULL;
 
@@ -959,6 +960,10 @@ void ONScripter::refreshMouseOverButton()
     shift_over_button = -1;
     current_button_link = root_button_link.next;
     SDL_GetMouseState( &mx, &my );
+    if (!(SDL_GetAppState() & SDL_APPMOUSEFOCUS)){
+        mx = screen_device_width;
+        my = screen_device_height;
+    }
     mx = mx * screen_width / screen_device_width;
     my = my * screen_width / screen_device_width;
     mouseOverCheck( mx, my );

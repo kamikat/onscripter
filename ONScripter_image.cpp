@@ -171,7 +171,7 @@ SDL_Surface *ONScripter::createSurfaceFromFile(char *filename, bool *has_alpha, 
     if (buffer != tmp_image_buf) delete[] buffer;
 
     if (!tmp)
-        fprintf( stderr, " *** can't load file [%s] ***\n", filename );
+        fprintf( stderr, " *** can't load file [%s] %s ***\n", filename, IMG_GetError() );
 
     return tmp;
 }

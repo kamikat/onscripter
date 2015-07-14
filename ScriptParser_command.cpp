@@ -2,7 +2,7 @@
  *
  *  ScriptParser_command.cpp - Define command executer of ONScripter
  *
- *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2015 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -775,7 +775,6 @@ int ScriptParser::labellogCommand()
 int ScriptParser::kidokuskipCommand()
 {
     kidokuskip_flag = true;
-    kidokumode_flag = true;
     script_h.loadKidokuData();
     
     return RET_CONTINUE;
