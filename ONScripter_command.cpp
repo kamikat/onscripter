@@ -2,7 +2,7 @@
  * 
  *  ONScripter_command.cpp - Command executer of ONScripter
  *
- *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -958,7 +958,7 @@ int ONScripter::saveonCommand()
 
 int ONScripter::saveoffCommand()
 {
-    if (saveon_flag && internal_saveon_flag) saveSaveFile(-1);
+    if (saveon_flag && internal_saveon_flag) saveSaveFile(false);
     
     saveon_flag = false;
 
@@ -977,12 +977,8 @@ int ONScripter::savegameCommand()
     if (savegame2_flag)
         savestr = script_h.readStr();
 
-    if ( no < 0 )
-        errorAndExit("savegame: save number is less than 0.");
-    else{
-        if (saveon_flag && internal_saveon_flag) saveSaveFile(-1);
-        saveSaveFile( no, savestr ); 
-    }
+    if (saveon_flag && internal_saveon_flag) saveSaveFile(false);
+    saveSaveFile( true, no, savestr ); 
 
     return RET_CONTINUE;
 }
@@ -1056,7 +1052,7 @@ int ONScripter::resetCommand()
         script_h.getVariableData(i).reset(false);
 
     setCurrentLabel( "start" );
-    saveSaveFile(-1);
+    saveSaveFile(false);
     
     return RET_CONTINUE;
 }
@@ -1388,9 +1384,30 @@ int ONScripter::mp3Command()
     stopBGM( false );
 
     music_play_loop_flag = loop_flag;
+    music_loopback_offset = 0.0;
 
     const char *buf = script_h.readStr();
     if (buf[0] != '\0'){
+        if (buf[0]=='('){
+            buf++;
+            bool integer_flag = true;
+            double decimal = 0.1;
+            while (*buf != ')' && *buf != '\0'){
+                if (*buf >= '0' && *buf <= '9'){
+                    if (integer_flag)
+                        music_loopback_offset = music_loopback_offset*10.0 + *buf - '0';
+                    else{
+                        music_loopback_offset += decimal*(*buf - '0');
+                        decimal *= 0.1;
+                    }
+                }
+                else if (*buf == '.')
+                    integer_flag = false;
+                buf++;
+            }
+            if (*buf == ')') buf++;
+        }
+
         int tmp = music_volume;
         setStr(&music_file_name, buf);
 
@@ -1538,6 +1555,18 @@ int ONScripter::menu_fullCommand()
         fullscreen_mode = true;
     }
 
+    return RET_CONTINUE;
+}
+
+int ONScripter::menu_click_pageCommand()
+{
+    skip_mode |= SKIP_TO_EOP;
+    return RET_CONTINUE;
+}
+
+int ONScripter::menu_click_defCommand()
+{
+    skip_mode &= ~SKIP_TO_EOP;
     return RET_CONTINUE;
 }
 
@@ -1769,9 +1798,6 @@ int ONScripter::locateCommand()
 int ONScripter::loadgameCommand()
 {
     int no = script_h.readInt();
-
-    if ( no < 0 )
-        errorAndExit( "loadgame: save number is less than 0." );
 
     int fadeout = mp3fadeout_duration;
     mp3fadeout_duration = 0; //don't use fadeout during a load

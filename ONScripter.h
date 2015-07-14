@@ -2,7 +2,7 @@
  * 
  *  ONScripter.h - Execution block parser of ONScripter
  *
- *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -171,6 +171,8 @@ public:
     int monocroCommand();
     int menu_windowCommand();
     int menu_fullCommand();
+    int menu_click_pageCommand();
+    int menu_click_defCommand();
     int menu_automodeCommand();
     int lsp2Command();
     int lspCommand();
@@ -495,7 +497,7 @@ private:
     char *readSaveStrFromFile( int no );
     int  loadSaveFile( int no );
     void saveMagicNumber( bool output_flag );
-    int  saveSaveFile( int no, const char *savestr=NULL );
+    int  saveSaveFile( bool write_to_disk, int no=0, const char *savestr=NULL );
 
     int  loadSaveFile2( int file_version );
     void saveSaveFile2( bool output_flag );
@@ -617,6 +619,7 @@ private:
     int current_cd_track;
     bool cd_play_loop_flag;
     bool music_play_loop_flag;
+    double music_loopback_offset;
     bool mp3save_flag;
     char *music_file_name;
     unsigned char *music_buffer; // for looped music

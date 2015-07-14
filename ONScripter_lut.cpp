@@ -2,7 +2,7 @@
  * 
  *  ONScripter_lut.cpp - command lookup-table for ONScripter
  *
- *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -179,6 +179,8 @@ static ONScripter::FuncLUT func_lut[] = {
     {"mid",				&ONScripter::midCommand},
     {"menu_window",		&ONScripter::menu_windowCommand},
     {"menu_full",		&ONScripter::menu_fullCommand},
+    {"menu_click_page",	&ONScripter::menu_click_pageCommand},
+    {"menu_click_def",	&ONScripter::menu_click_defCommand},
     {"menu_automode",	&ONScripter::menu_automodeCommand},
     {"menusetwindow",	&ONScripter::menusetwindowCommand},
     {"menuselectvoice",	&ONScripter::menuselectvoiceCommand},

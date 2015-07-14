@@ -2,7 +2,7 @@
  * 
  *  ONScripter.cpp - Execution block parser of ONScripter
  *
- *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
+ *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -546,6 +546,7 @@ void ONScripter::reset()
     wave_play_loop_flag = false;
     midi_play_loop_flag = false;
     music_play_loop_flag = false;
+    music_loopback_offset = 0.0;
     cd_play_loop_flag = false;
     mp3save_flag = false;
     mp3fade_start = 0;
@@ -897,7 +898,7 @@ int ONScripter::parseLine( )
         FuncHash &fh = func_hash[cmd[0]-'a'];
         for (int i=0 ; i<fh.num ; i++){
             if ( !strcmp( fh.func[i].command, cmd ) ){
-                //if (saveon_flag) saveSaveFile( -1 );
+                //if (saveon_flag) saveSaveFile(false);
                 return (this->*fh.func[i].method)();
             }
         }
